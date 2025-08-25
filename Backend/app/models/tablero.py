@@ -5,7 +5,7 @@ from app.db.base_class import Base
 class Tablero(Base):
     __tablename__ = "tablero"
 
-    id_tablero = Column(Integer, primary_key=True, index=True)
+    id_tablero = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_proyecto = Column(Integer, ForeignKey("proyecto.id_proyecto"), nullable=False)
     codigo_tablero = Column(String, nullable=False)
     tipo_tablero = Column(String, nullable=True)

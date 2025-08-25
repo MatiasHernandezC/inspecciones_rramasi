@@ -1,60 +1,52 @@
-SHELL := /bin/bash
+# Variables
+TIMEOUT ?= 60
+MODEL_PATH ?= ./ml/model/
+MODEL_NAME ?= model.pkl
 
-# Variables definitions
-# -----------------------------------------------------------------------------
+APP_NAME := app.main:app
+UV := uv run
+ALEMBIC := $(UV) alembic
+PYTHONPATH := app/
 
-ifeq ($(TIMEOUT),)
-TIMEOUT := 60
-endif
+.PHONY: all clean test install run deploy down alembic-init alembic-rev alembic-up alembic-downgrade
 
-ifeq ($(MODEL_PATH),)
-MODEL_PATH := ./ml/model/
-endif
-
-ifeq ($(MODEL_NAME),)
-MODEL_NAME := model.pkl
-endif
-
-# Target section and Global definitions
-# -----------------------------------------------------------------------------
-.PHONY: all clean test install run deploy down
-
-all: clean test install run deploy down
+# Workflow por defecto
+all: install run
 
 venv:
 	uv venv .venv
 
-test: install
-	uv run pytest tests -vv --show-capture=all
-
-install: generate_dot_env venv
-	pip install uv --break-system-packages
+install: venv
+	pip install uv --break-system-packages || pip install uv
 	uv pip install -e ".[dev]"
+	if not exist .env copy .env.example .env
 
-run: venv
-	PYTHONPATH=app/ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8080
-
-deploy: generate_dot_env
+run:
+	uvicorn app.main:app --reload
+deploy:
 	docker-compose build
 	docker-compose up -d
 
 down:
 	docker-compose down
 
-generate_dot_env:
-	@if [[ ! -e .env ]]; then \
-		cp .env.example .env; \
-	fi
+# ---- Alembic ----
+alembic-init:
+	$(ALEMBIC) init alembic
+
+alembic-rev:
+	$(ALEMBIC) revision --autogenerate -m "$(m)"
+
+alembic-up:
+	$(ALEMBIC) upgrade head
+
+alembic-downgrade:
+	$(ALEMBIC) downgrade -1
+
+test: install
+	$(UV) pytest tests -vv --show-capture=all
 
 clean:
-	@find . -name '*.pyc' -exec rm -rf {} \;
-	@find . -name '__pycache__' -exec rm -rf {} \;
-	@find . -name 'Thumbs.db' -exec rm -rf {} \;
-	@find . -name '*~' -exec rm -rf {} \;
-	rm -rf .cache
-	rm -rf build
-	rm -rf dist
-	rm -rf *.egg-info
-	rm -rf htmlcov
-	rm -rf .tox/
-	rm -rf docs/_build
+	-del /s /q *.pyc
+	-del /s /q __pycache__
+	-del /s /q .cache build dist *.egg-info htmlcov .tox docs\_build

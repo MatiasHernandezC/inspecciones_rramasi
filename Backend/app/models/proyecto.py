@@ -5,7 +5,7 @@ from app.db.base_class import Base
 class Proyecto(Base):
     __tablename__ = "proyecto"
 
-    id_proyecto = Column(Integer, primary_key=True, index=True)
+    id_proyecto = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_cliente = Column(Integer, ForeignKey("cliente.id_cliente"), nullable=False)
     nombre = Column(String, nullable=False)
     descripcion = Column(Text, nullable=True)

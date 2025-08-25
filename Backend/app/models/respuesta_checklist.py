@@ -5,7 +5,7 @@ from app.db.base_class import Base
 class RespuestaChecklist(Base):
     __tablename__ = "respuesta_checklist"
 
-    id_respuesta = Column(Integer, primary_key=True, index=True)
+    id_respuesta = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_checklist = Column(Integer, ForeignKey("checklist.id_checklist"), nullable=False)
     id_inspeccion = Column(Integer, ForeignKey("inspeccion.id_inspeccion"), nullable=False)
     respuesta = Column(String, nullable=True)

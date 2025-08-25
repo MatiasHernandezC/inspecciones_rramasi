@@ -5,7 +5,7 @@ from app.db.base_class import Base
 class Foto(Base):
     __tablename__ = "foto"
 
-    id_foto = Column(Integer, primary_key=True, index=True)
+    id_foto = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_proyecto = Column(Integer, ForeignKey("proyecto.id_proyecto"), nullable=False)
     id_tablero = Column(Integer, ForeignKey("tablero.id_tablero"), nullable=False)
     id_inspeccion = Column(Integer, ForeignKey("inspeccion.id_inspeccion"), nullable=True)

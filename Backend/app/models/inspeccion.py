@@ -5,7 +5,7 @@ from app.db.base_class import Base
 class Inspeccion(Base):
     __tablename__ = "inspeccion"
 
-    id_inspeccion = Column(Integer, primary_key=True, index=True)
+    id_inspeccion = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_proyecto = Column(Integer, ForeignKey("proyecto.id_proyecto"), nullable=False)
     id_tablero = Column(Integer, ForeignKey("tablero.id_tablero"), nullable=False)
     fecha_inspeccion = Column(DateTime, nullable=False)
