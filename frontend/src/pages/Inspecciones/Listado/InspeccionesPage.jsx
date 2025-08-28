@@ -8,7 +8,7 @@ export default function InspeccionesPage(){
   const nav = useNavigate();
 
   useEffect(()=>{ (async()=>{
-    try{ setRows(await InspeccionesAPI.listar(q)); }catch(e){ console.error(e); }
+    try{ setRows(await InspeccionesAPI.listar("")); }catch(e){ console.error(e); }
   })(); },[]);
 
   return (

@@ -9,7 +9,8 @@ export const InspeccionesAPI = {
   subirImagenes: (id, files) => {
     const fd = new FormData();
     files.forEach(f => fd.append("files", f));
-    return fetch(`${import.meta?.env?.VITE_API_URL || process.env.REACT_APP_API_URL || "http://localhost:8080"}/inspecciones/${id}/imagenes`, {
+    const base = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    return fetch(`${base}/inspecciones/${id}/imagenes`, {
       method: "POST",
       body: fd,
       credentials: "include",
