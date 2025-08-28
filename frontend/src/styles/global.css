@@ -1,64 +1,44 @@
-:root{ --bg:#0b0b0c; --panel:#111214; --card:#f3f4f6; --muted:#e5e7eb; --ink:#0c0d0e; --accent:#111827; --brand:#000; }
-*{box-sizing:border-box}
-body{margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Layout helpers */
-.appContent{ padding-top: 72px }
-
-.page{ min-height:100vh; background:white; color:var(--ink) }
-.container{ max-width:1100px; margin:0 auto; padding:24px 20px 80px }
-.header{ position:sticky; top:0; z-index:1000; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:8px 12px; background:#8bc34a; color:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.15) }
-.brand{ display:flex; align-items:center; gap:16px }
-.logo{ width:56px; height:56px; border-radius:12px; background:#7cb342; color:transparent; display:grid; place-items:center; font-weight:600; font-size:12px }
-.title{ font-size:28px; line-height:1.1; font-weight:800; color:#fff }
-.menuBtn{ width:40px; height:40px; border-radius:999px; border:0; background:rgba(255,255,255,.15); color:#fff; display:grid; place-items:center; cursor:pointer; font-size:0 }
-.menuBtn:hover{ background:rgba(255,255,255,.25) }
-.menuBtn::before{ content:"☰"; font-size:18px }
-
-.section{ background:#f5f6f8; border-radius:14px; padding:22px; margin-top:18px }
-.sectionTitle{ font-size:26px; font-weight:800; margin:0 0 12px }
-.row{ display:flex; flex-wrap:wrap; align-items:center; gap:12px }
-.spacer{ flex:1 }
-
-.btn{ appearance:none; border:0; background:var(--brand); color:white; padding:12px 18px; border-radius:10px; font-weight:700; cursor:pointer }
-.btn.secondary{ background:white; color:#111827; border:1px solid var(--muted) }
-.btn.ghost{ background:#111827; color:white }
-
-.input, .select{ width:100%; padding:10px 12px; border:1px solid var(--muted); border-radius:10px; background:white }
-.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
-.grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
-.card{ background:white; border:1px solid var(--muted); border-radius:12px; padding:14px }
-.table{ width:100%; border-collapse:separate; border-spacing:0 8px }
-.trow{ background:white; border:1px solid var(--muted); border-radius:10px }
-.tcell{ padding:10px 12px }
-
-.badge{ display:inline-flex; align-items:center; gap:8px; background:#eef2ff; color:#1e3a8a; padding:6px 10px; border-radius:999px; font-weight:700 }
-.radioRow{ display:flex; gap:16px; align-items:center }
-.radioRow label{ display:inline-flex; gap:6px; align-items:center }
-
-@media (max-width: 720px){
-  .title{ font-size:24px }
-  .logo{ width:44px; height:44px }
-  .grid2{ grid-template-columns:1fr }
+/* Base resets and typography */
+@layer base {
+  *, *::before, *::after { @apply box-border; }
+  html { @apply antialiased; }
+  body { @apply m-0 font-sans bg-slate-50 text-slate-900; }
 }
 
-/* Navbar-inspired helpers (no Tailwind) */
-.navBtn{ appearance:none; border:0; background:rgba(255,255,255,.15); color:#fff; padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; text-decoration:none }
-.navBtn:hover{ background:rgba(255,255,255,.25) }
-.navBtn.ghost{ background:#689f38 }
-.navbar{ position:fixed; top:0; left:0; right:0; z-index:1000; background:#8bc34a; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.15) }
-.navInner{ max-width:1100px; margin:0 auto; padding:0 20px }
-.navRow{ display:flex; align-items:center; justify-content:space-between; height:64px; gap:12px }
-.brandLink{ display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff }
-.brandImg{ width:40px; height:40px; object-fit:contain }
-.brandTitle{ font-size:20px; font-weight:800; color:#fff; white-space:nowrap }
-.actions{ display:flex; align-items:center; gap:8px }
-.hamburger{ appearance:none; border:0; background:rgba(255,255,255,.15); color:#fff; width:40px; height:40px; border-radius:999px; cursor:pointer }
-.hamburger:hover{ background:rgba(255,255,255,.25) }
-.hideMobile{ display:none }
-.showMobile{ display:inline-flex; align-items:center; justify-content:center }
+/* Component layer mapping previous classes to Tailwind utilities */
+@layer components {
+  .section { @apply mt-5 rounded-xl bg-white p-6 ring-1 ring-slate-200 shadow-sm; }
+  .sectionTitle { @apply mb-3 text-2xl font-extrabold text-slate-900; }
+  .title { @apply text-3xl font-extrabold text-slate-900; }
+  .row { @apply flex flex-wrap items-center gap-3; }
+  .spacer { @apply grow; }
 
-@media (min-width: 720px){
-  .hideMobile{ display:flex }
-  .showMobile{ display:none }
+  .btn { @apply inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 font-bold text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400; }
+  .btn.secondary { @apply bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50; }
+  .btn.ghost { @apply bg-slate-900 text-white; }
+
+  .input, .select { @apply w-full rounded-lg bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-blue-400; }
+  .grid2 { @apply grid grid-cols-1 gap-3 md:grid-cols-2; }
+  .grid3 { @apply grid grid-cols-1 gap-3 md:grid-cols-3; }
+  .card { @apply rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm; }
+
+  .table { @apply w-full border-separate [border-spacing:0_8px]; }
+  .trow { @apply rounded-lg bg-white ring-1 ring-slate-200; }
+  .tcell { @apply px-3 py-2; }
+
+  .badge { @apply inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-bold text-blue-800; }
+  .radioRow { @apply flex items-center gap-4; }
+  .radioRow label { @apply inline-flex items-center gap-1.5; }
+
+  /* Navbar helper if referenced elsewhere */
+  .navBtn { @apply inline-flex items-center rounded-lg bg-white/15 px-3 py-2 font-semibold text-white backdrop-blur hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/60; }
+}
+
+/* Responsive helpers for legacy classes if needed */
+@media (max-width: 720px) {
+  .grid2 { grid-template-columns: 1fr; }
 }
