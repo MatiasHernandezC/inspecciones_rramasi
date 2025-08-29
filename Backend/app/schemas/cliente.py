@@ -9,7 +9,7 @@ class ClienteBase(BaseModel):
     contacto: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
 
 class ClienteCreate(ClienteBase):
     pass

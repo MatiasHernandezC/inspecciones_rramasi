@@ -12,6 +12,11 @@ class InspeccionBase(BaseModel):
     normativa: Optional[str] = None
     conclusion_calidad: Optional[str] = None
     observaciones: Optional[str] = None
+    # nuevos campos de cabecera
+    num_solicitud_oc: Optional[str] = None
+    num_producto: Optional[str] = None
+    num_serie: Optional[str] = None
+    plano: Optional[str] = None
     estado: Optional[str] = None
 
 class InspeccionCreate(InspeccionBase):
@@ -26,6 +31,10 @@ class InspeccionUpdate(BaseModel):
     normativa: Optional[str] = None
     conclusion_calidad: Optional[str] = None
     observaciones: Optional[str] = None
+    num_solicitud_oc: Optional[str] = None
+    num_producto: Optional[str] = None
+    num_serie: Optional[str] = None
+    plano: Optional[str] = None
     estado: Optional[str] = None
 
 class InspeccionOut(InspeccionBase):

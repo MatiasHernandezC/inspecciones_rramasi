@@ -51,6 +51,36 @@ def upgrade() -> None:
         sa.Column("id_plantilla", sa.Integer),
     )
 
+    # 0) Limpieza idempotente de plantillas previas con mismo nombre
+    #    Evita duplicados de ejecuciones anteriores
+    for nombre_cleanup in ["Base Informe Calidad", "Base Informe Calidad Lite"]:
+        res_ids = bind.execute(
+            sa.text(
+                "SELECT id_plantilla FROM checklist_plantilla WHERE nombre = :n"
+            ),
+            {"n": nombre_cleanup},
+        ).fetchall()
+        ids = [r[0] for r in res_ids]
+        if ids:
+            bind.execute(
+                sa.text(
+                    "DELETE FROM plantilla_por_tipo WHERE id_plantilla = ANY(:ids)"
+                ),
+                {"ids": ids},
+            )
+            bind.execute(
+                sa.text(
+                    "DELETE FROM checklist_item WHERE id_plantilla = ANY(:ids)"
+                ),
+                {"ids": ids},
+            )
+            bind.execute(
+                sa.text(
+                    "DELETE FROM checklist_plantilla WHERE id_plantilla = ANY(:ids)"
+                ),
+                {"ids": ids},
+            )
+
     # 1) Upsert plantilla base
     nombre = "Base Informe Calidad"
     descripcion = "Plantilla base para informes de inspección visual y pruebas."
@@ -122,7 +152,7 @@ def upgrade() -> None:
         b(sec, "3.12 VERIFICACION VENTILACION SEGÚN ESPECIFICACION", 312),
         b(sec, "3.13 ALTURA MIN Y MAX DISPOSITIVOS 0.45-2.0 m", 313),
         b(sec, "3.14 PROTECCION BARRAS DISTRIBUCION Y SENALIZACION RIESGO", 314),
-        b(sec, ">100A => INSTRUMENTOS DE MEDICION CORRIENTE Y TENSION POR FASE", 315),
+        b(sec, "3.15 >100A => INSTRUMENTOS DE MEDICION CORRIENTE Y TENSION POR FASE", 315),
         b(sec, "3.16 LUCES PILOTO CONECTADA DESDE ENTRADA ALIMENTADOR", 316),
         b(sec, "3.17 TABLERO GENERAL/DISTRIBUCION (>3 ctos) => CORTE 4P", 317),
         b(sec, "3.18 DISTINTOS SERVICIOS EN SECCIONES DISTINTAS", 318),
@@ -318,45 +348,109 @@ def upgrade() -> None:
         b(sec, "20.1 PRUEBA DE FUNCIONAMIENTO SEGÚN IEC 61557-6", 2001),
     ]
 
-    # Insert items idempotently (by unique per plantilla + nombre_item)
+    # Insert items (limpio por nombre)
     for it in items:
-        exists = bind.execute(
-            sa.select(sa.func.count())
-            .select_from(checklist_item)
-            .where(
-                checklist_item.c.id_plantilla == plantilla_id,
-                checklist_item.c.nombre_item == it["nombre_item"],
+        bind.execute(
+            checklist_item.insert().values(
+                id_plantilla=plantilla_id,
+                seccion=it["seccion"],
+                nombre_item=it["nombre_item"],
+                tipo_item=it["tipo_item"],
+                required=it["required"],
+                orden=it["orden"],
+                reglas=it["reglas"],
+            )
+        )
+
+    # 3) Tipos de tablero requeridos (insert if not exists)
+    tipos_requeridos = [
+        "Autosoportado",
+        "Residencial",
+        "Murales",
+        "Combinados",
+        "Banco Condensadores Murales",
+        "Banco Condensadores Autosoportados",
+    ]
+    tipo_tab_rows = dict(
+        bind.execute(sa.text("SELECT nombre, id_tipo FROM tipo_tablero")).fetchall()
+    )
+    ids_tipos = {}
+    for nombre_tipo in tipos_requeridos:
+        if nombre_tipo in tipo_tab_rows:
+            ids_tipos[nombre_tipo] = tipo_tab_rows[nombre_tipo]
+        else:
+            res = bind.execute(
+                sa.text(
+                    "INSERT INTO tipo_tablero (nombre, categoria, activo) VALUES (:n, NULL, TRUE) RETURNING id_tipo"
+                ),
+                {"n": nombre_tipo},
+            )
+            ids_tipos[nombre_tipo] = res.scalar()
+
+    # 4) Crear plantilla LITE (solo primer item por seccion)
+    lite_nombre = "Base Informe Calidad Lite"
+    lite_existing = bind.execute(
+        sa.select(checklist_plantilla.c.id_plantilla).where(
+            checklist_plantilla.c.nombre == lite_nombre,
+            checklist_plantilla.c.version == version,
+        )
+    ).fetchone()
+    if lite_existing:
+        lite_id = lite_existing[0]
+    else:
+        bind.execute(
+            checklist_plantilla.insert().values(
+                nombre=lite_nombre,
+                descripcion="Plantilla base reducida (primer item por sección)",
+                version=version,
+                vigente=True,
+            )
+        )
+        lite_id = bind.execute(
+            sa.select(checklist_plantilla.c.id_plantilla).where(
+                checklist_plantilla.c.nombre == lite_nombre,
+                checklist_plantilla.c.version == version,
             )
         ).scalar()
-        if not exists:
-            bind.execute(
-                checklist_item.insert().values(
-                    id_plantilla=plantilla_id,
-                    seccion=it["seccion"],
-                    nombre_item=it["nombre_item"],
-                    tipo_item=it["tipo_item"],
-                    required=it["required"],
-                    orden=it["orden"],
-                    reglas=it["reglas"],
-                )
-            )
 
-    # 3) Vincular plantilla a todos los tipos existentes (provisorio; se puede afinar luego)
-    tipos = bind.execute(sa.select(tipo_tablero.c.id_tipo)).fetchall()
-    for (id_tipo,) in tipos:
-        # check if link exists
+    # Determinar primer item por sección según 'orden'
+    from collections import defaultdict
+
+    first_by_sec = {}
+    for it in items:
+        sec = it["seccion"]
+        if sec not in first_by_sec or it["orden"] < first_by_sec[sec]["orden"]:
+            first_by_sec[sec] = it
+
+    # Insertar items lite
+    for it in first_by_sec.values():
+        bind.execute(
+            checklist_item.insert().values(
+                id_plantilla=lite_id,
+                seccion=it["seccion"],
+                nombre_item=it["nombre_item"],
+                tipo_item=it["tipo_item"],
+                required=it["required"],
+                orden=it["orden"],
+                reglas=it["reglas"],
+            )
+        )
+
+    # 5) Vincular por tipo: Autosoportado -> full; otros -> lite
+    for nombre_tipo, id_tipo in ids_tipos.items():
+        objetivo = plantilla_id if nombre_tipo == "Autosoportado" else lite_id
         link_exists = bind.execute(
             sa.select(sa.func.count())
             .select_from(plantilla_por_tipo)
             .where(
                 plantilla_por_tipo.c.id_tipo == id_tipo,
-                plantilla_por_tipo.c.id_plantilla == plantilla_id,
+                plantilla_por_tipo.c.id_plantilla == objetivo,
             )
         ).scalar()
         if not link_exists:
             bind.execute(
                 plantilla_por_tipo.insert().values(
-                    id_tipo=id_tipo, id_plantilla=plantilla_id
+                    id_tipo=id_tipo, id_plantilla=objetivo
                 )
             )
 

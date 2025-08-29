@@ -15,6 +15,11 @@ class Inspeccion(Base):
     normativa = Column(String, nullable=True)
     conclusion_calidad = Column(String, nullable=True)
     observaciones = Column(Text, nullable=True)
+    # Campos de cabecera adicionales
+    num_solicitud_oc = Column(String, nullable=True)
+    num_producto = Column(String, nullable=True)
+    num_serie = Column(String, nullable=True)
+    plano = Column(String, nullable=True)
     estado = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

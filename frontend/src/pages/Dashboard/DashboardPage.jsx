@@ -8,9 +8,9 @@ export default function DashboardPage(){
       <h2 style={{fontSize:22, fontWeight:800, marginTop:10}}>Acciones</h2>
 
       <section className="section">
-        <h3 className="sectionTitle">Nueva Inspección</h3>
+        <h3 className="sectionTitle">Nueva InspecciÃ³n</h3>
         <div className="row">
-          <button className="btn" onClick={()=>nav("/inspecciones/nueva")}>Nueva Inspección</button>
+          <button className="btn" onClick={()=>nav("/inspecciones/nueva")}>Nueva InspecciÃ³n</button>
           <div className="spacer"/>
         </div>
       </section>
@@ -24,10 +24,10 @@ export default function DashboardPage(){
       </section>
 
       <section className="section">
-        <h3 className="sectionTitle">Administrar imágenes</h3>
+        <h3 className="sectionTitle">Administrar imÃ¡genes</h3>
         <div className="row">
-          <button className="btn ghost" onClick={()=>nav("/imagenes")}>Tomar Imágenes</button>
-          <button className="btn secondary" onClick={()=>nav("/imagenes")}>Subir Imágenes</button>
+          <button className="btn ghost" onClick={()=>nav("/imagenes")}>Tomar ImÃ¡genes</button>
+          <button className="btn secondary" onClick={()=>nav("/imagenes")}>Subir ImÃ¡genes</button>
           <button className="btn" onClick={()=>nav("/imagenes")}>Adjuntar a Proyecto</button>
         </div>
       </section>
