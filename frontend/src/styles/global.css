@@ -30,6 +30,12 @@
   .trow { @apply rounded-lg bg-white ring-1 ring-slate-200; }
   .tcell { @apply px-3 py-2; }
 
+  /* Excel-like table variant */
+  .table.excel { @apply w-full border-collapse; }
+  .table.excel thead th { @apply bg-slate-100 font-bold text-slate-800 border border-slate-300; }
+  .table.excel tbody td { @apply border border-slate-300; }
+  .table.excel .section-head { @apply bg-slate-200 font-extrabold text-slate-900; }
+
   .badge { @apply inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-bold text-blue-800; }
   .radioRow { @apply flex items-center gap-4; }
   .radioRow label { @apply inline-flex items-center gap-1.5; }

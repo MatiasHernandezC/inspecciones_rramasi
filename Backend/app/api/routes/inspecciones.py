@@ -5,7 +5,7 @@ from typing import List
 from app.crud import inspeccion as crud_inspeccion
 from app.schemas.inspeccion import InspeccionCreate, InspeccionOut, InspeccionUpdate
 from app.crud import respuesta_checklist as crud_respuestas
-from app.schemas.respuesta_checklist import RespuestasBulkIn
+from app.schemas.respuesta_checklist import RespuestasBulkIn, RespuestaChecklistOut
 from app.db.session import SessionLocal
 
 router = APIRouter()
@@ -51,3 +51,7 @@ def upsert_respuestas_bulk(inspeccion_id: int, payload: RespuestasBulkIn, db: Se
     for r in payload.respuestas:
         crud_respuestas.upsert_respuesta(db, inspeccion_id, r.id_item, r.respuesta, r.observacion)
     return {"detail": "Respuestas guardadas"}
+
+@router.get("/{inspeccion_id}/respuestas", response_model=list[RespuestaChecklistOut])
+def listar_respuestas_inspeccion(inspeccion_id: int, db: Session = Depends(get_db)):
+    return crud_respuestas.list_by_inspeccion(db, inspeccion_id)

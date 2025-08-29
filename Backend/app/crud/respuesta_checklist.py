@@ -40,6 +40,13 @@ def get_by_inspeccion_item(db: Session, id_inspeccion: int, id_item: int) -> Opt
         .first()
     )
 
+def list_by_inspeccion(db: Session, id_inspeccion: int):
+    return (
+        db.query(RespuestaChecklist)
+        .filter(RespuestaChecklist.id_inspeccion == id_inspeccion)
+        .all()
+    )
+
 def upsert_respuesta(db: Session, id_inspeccion: int, id_item: int, respuesta: Optional[str], observacion: Optional[str]):
     db_obj = get_by_inspeccion_item(db, id_inspeccion, id_item)
     if db_obj:

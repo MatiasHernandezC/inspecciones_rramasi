@@ -119,7 +119,7 @@ def upgrade() -> None:
     items = []
 
     # 1.0 INSPECCIÓN VISUAL / PRESENTACIÓN
-    sec = "INSPECCIÓN VISUAL"
+    sec = "PRESENTACIÓN"
     items += [
         b(sec, "1.1 LIMPIEZA INTERNA Y EXTERNA", 101),
         b(sec, "1.3 CABLEADO ORDENADO Y AMARRADO", 103),

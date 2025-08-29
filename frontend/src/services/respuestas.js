@@ -6,5 +6,6 @@ export const RespuestasAPI = {
       method: "POST",
       body: JSON.stringify({ respuestas }),
     }),
+  listarPorInspeccion: (id_inspeccion) =>
+    apiFetch(`/api/inspecciones/${id_inspeccion}/respuestas`),
 };
-

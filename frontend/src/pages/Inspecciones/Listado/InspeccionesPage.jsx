@@ -15,7 +15,7 @@ export default function InspeccionesPage(){
     <div>
       <h2 className="title" style={{fontSize:32}}>Proyectos / Inspecciones</h2>
       <div className="section">
-        <div className="row">
+        <div className="row" style={{gap:8}}>
           <input className="input" placeholder="Buscar por cliente, proyecto..." value={q} onChange={e=>setQ(e.target.value)} />
           <button className="btn secondary" onClick={async()=>setRows(await InspeccionesAPI.listar())}>Buscar</button>
           <div className="spacer"/>
@@ -24,14 +24,14 @@ export default function InspeccionesPage(){
       </div>
 
       <div className="section">
-        <table className="table">
+        <table className="table excel">
           <thead>
             <tr className="trow">
               <th className="tcell">Cliente</th>
               <th className="tcell">Proyecto</th>
               <th className="tcell">Fecha</th>
               <th className="tcell">Estado</th>
-              <th className="tcell" style={{width:160}}></th>
+              <th className="tcell" style={{width:220}}></th>
             </tr>
           </thead>
           <tbody>
@@ -41,10 +41,10 @@ export default function InspeccionesPage(){
                 <td className="tcell">{r.proyecto}</td>
                 <td className="tcell">{new Date(r.fecha).toLocaleDateString()}</td>
                 <td className="tcell"><span className="badge">{r.estado}</span></td>
-                <td className="tcell">
-                  <div className="row">
+                <td className="tcell" style={{textAlign:'right'}}>
+                  <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
                     <button className="btn secondary" onClick={()=>nav(`/inspecciones/${r.id}`)}>Abrir</button>
-                    <button className="btn" onClick={()=>InspeccionesAPI.generarInforme(r.id)}>Generar informe</button>
+                    {/* <button className="btn" onClick={()=>InspeccionesAPI.generarInforme(r.id)}>Generar informe</button> */}
                   </div>
                 </td>
               </tr>

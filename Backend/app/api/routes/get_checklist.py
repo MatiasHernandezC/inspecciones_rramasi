@@ -21,18 +21,30 @@ def get_db():
 
 
 @router.get("/get_checklist", response_model=ChecklistResolvedOut)
-def get_checklist(tablero: int = Query(..., description="ID de tablero"), db: Session = Depends(get_db)):
-    tb = db.query(Tablero).filter(Tablero.id_tablero == tablero).first()
-    if not tb:
-        raise HTTPException(status_code=404, detail="Tablero no encontrado")
-    if not tb.id_tipo:
-        raise HTTPException(status_code=400, detail="El tablero no tiene tipo asociado")
+def get_checklist(
+    tablero: int | None = Query(None, description="ID de tablero"),
+    tipo: int | None = Query(None, description="ID de tipo de tablero"),
+    db: Session = Depends(get_db),
+):
+    # Resolver tipo ya sea por parametro directo o por tablero
+    resolved_tipo = None
+    if tipo is not None:
+        resolved_tipo = tipo
+    elif tablero is not None:
+        tb = db.query(Tablero).filter(Tablero.id_tablero == tablero).first()
+        if not tb:
+            raise HTTPException(status_code=404, detail="Tablero no encontrado")
+        if not tb.id_tipo:
+            raise HTTPException(status_code=400, detail="El tablero no tiene tipo asociado")
+        resolved_tipo = tb.id_tipo
+    else:
+        raise HTTPException(status_code=400, detail="Debe indicar 'tipo' o 'tablero'")
 
-    # Encontrar plantilla vigente para el tipo del tablero
+    # Encontrar plantilla vigente para el tipo
     q = (
         db.query(ChecklistPlantilla)
         .join(PlantillaPorTipo, PlantillaPorTipo.id_plantilla == ChecklistPlantilla.id_plantilla)
-        .filter(PlantillaPorTipo.id_tipo == tb.id_tipo, ChecklistPlantilla.vigente == True)  # noqa: E712
+        .filter(PlantillaPorTipo.id_tipo == resolved_tipo, ChecklistPlantilla.vigente == True)  # noqa: E712
         .order_by(ChecklistPlantilla.version.desc())
     )
     plantilla = q.first()
@@ -60,4 +72,3 @@ def get_checklist(tablero: int = Query(..., description="ID de tablero"), db: Se
         )
 
     return ChecklistResolvedOut(plantilla_id=plantilla.id_plantilla, version=plantilla.version, items=out_items)
-

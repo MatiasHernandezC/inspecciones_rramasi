@@ -10,6 +10,7 @@ import { RespuestasAPI } from "../../../services/respuestas";
 import { FotosAPI } from "../../../services/fotos";
 import CropperMini from "../../../components/media/CropperMini";
 import { IntegradoresAPI } from "../../../services/integradores";
+import { Divider } from "@mui/material";
 
 export default function NuevaInspeccionPage() {
   const [clientes, setClientes] = useState([]);
@@ -21,8 +22,8 @@ export default function NuevaInspeccionPage() {
     id_cliente: "",
     id_proyecto: "",
     id_tablero: "",
-    tipo_visita: "INICIAL",
-    normativa: "ISE",
+    id_tipo: "",
+    codigo_tablero: "",
     observaciones: "",
     inspector: "",
     fecha_inspeccion: "",
@@ -30,7 +31,6 @@ export default function NuevaInspeccionPage() {
     num_solicitud_oc: "",
     num_producto: "",
     num_serie: "",
-    plano: "",
   });
   const [inspeccionId, setInspeccionId] = useState(null);
   const [check, setCheck] = useState({ plantilla_id: null, version: null, items: [] });
@@ -134,6 +134,54 @@ export default function NuevaInspeccionPage() {
     })();
   }, [form.id_tablero]);
 
+  // Precarga por tipo seleccionado (si no hay tablero aún)
+  useEffect(() => {
+    (async () => {
+      if (!form.id_tipo) return;
+      try {
+        const ck = await ChecklistAPI.resolverPorTipo(form.id_tipo);
+        const items = (ck.items || []).map((it) => ({
+          ...it,
+          rules: typeof it.rules === "string" ? safeJson(it.rules) : it.rules,
+        }));
+        setCheck({ ...ck, items });
+        const t = tipos.find((x) => String(x.id_tipo) === String(form.id_tipo));
+        setTipoTableroNombre(t?.nombre || "");
+      } catch (e) {
+        console.error(e);
+        setCheck({ plantilla_id: null, version: null, items: [] });
+        setCheckError(e?.message || "Error cargando checklist por tipo");
+      }
+    })();
+  }, [form.id_tipo]);
+
+  const ensureTableroId = async () => {
+    if (form.id_tablero) return Number(form.id_tablero);
+    if (!form.id_proyecto || !form.codigo_tablero) return null;
+    try {
+      const list = await TablerosAPI.listarPorProyecto(form.id_proyecto);
+      const found = list.find(
+        (t) => String(t.codigo_tablero) === String(form.codigo_tablero)
+      );
+      if (found) return found.id_tablero;
+    } catch (_) {}
+    if (form.id_tipo) {
+      try {
+        const created = await TablerosAPI.crear({
+          id_proyecto: Number(form.id_proyecto),
+          id_tipo: Number(form.id_tipo),
+          codigo_tablero: String(form.codigo_tablero),
+          descripcion: "",
+          ubicacion: "",
+        });
+        return created.id_tablero;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return null;
+  };
+
   const grupos = useMemo(() => {
     const g = {};
     for (const it of check.items) {
@@ -149,21 +197,22 @@ export default function NuevaInspeccionPage() {
 
   const crearBorrador = async () => {
     if (!form.id_proyecto || !form.id_tablero) {
-      alert("Selecciona proyecto y tablero");
-      return;
+      const tid = await ensureTableroId();
+      if (!tid) {
+        alert("Selecciona proyecto, tipo y código de tablero");
+        return;
+      }
+      setForm((f) => ({ ...f, id_tablero: String(tid) }));
     }
     const payload = {
       id_proyecto: Number(form.id_proyecto),
-      id_tablero: Number(form.id_tablero),
-      tipo_visita: form.tipo_visita,
-      normativa: form.normativa,
+      id_tablero: Number(form.id_tablero || (await ensureTableroId())),
       inspector: form.inspector || undefined,
       fecha_inspeccion: form.fecha_inspeccion || undefined,
       conclusion_calidad: form.conclusion_calidad || undefined,
       num_solicitud_oc: form.num_solicitud_oc || undefined,
       num_producto: form.num_producto || undefined,
       num_serie: form.num_serie || undefined,
-      plano: form.plano || undefined,
       estado: "draft",
     };
     const created = await InspeccionesAPI.crear(payload);
@@ -193,7 +242,6 @@ export default function NuevaInspeccionPage() {
         num_solicitud_oc: form.num_solicitud_oc || undefined,
         num_producto: form.num_producto || undefined,
         num_serie: form.num_serie || undefined,
-        plano: form.plano || undefined,
         estado: "draft",
       });
       alert("Guardado");
@@ -225,102 +273,90 @@ export default function NuevaInspeccionPage() {
 
   return (
     <div>
-      <h2 className="title" style={{ fontSize: 32 }}>Nueva Inspección</h2>
-
       <div className="section">
-        <h3 className="sectionTitle">Datos del Informe</h3>
-        <div className="grid2">
-          <div>
-            <label>Cliente</label>
-            <select
-              className="input"
-              value={form.id_cliente}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, id_cliente: e.target.value, id_proyecto: "", id_tablero: "" }))
-              }
-            >
-              <option value="">-- Seleccionar --</option>
-              {clientes.map((c) => (
-                <option key={c.id_cliente} value={c.id_cliente}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Proyecto</label>
-            <select
-              className="input"
-              value={form.id_proyecto}
-              onChange={(e) => setForm((f) => ({ ...f, id_proyecto: e.target.value, id_tablero: "" }))}
-            >
-              <option value="">-- Seleccionar --</option>
-              {proyectos.map((p) => (
-                <option key={p.id_proyecto} value={p.id_proyecto}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Tablero</label>
-            <select
-              className="input"
-              value={form.id_tablero}
-              onChange={(e) => setForm((f) => ({ ...f, id_tablero: e.target.value }))}
-            >
-              <option value="">-- Seleccionar --</option>
-              {tableros.map((t) => (
-                <option key={t.id_tablero} value={t.id_tablero}>
-                  {t.codigo_tablero}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Tipo de visita</label>
-            <select
-              className="input"
-              value={form.tipo_visita}
-              onChange={(e) => setForm((f) => ({ ...f, tipo_visita: e.target.value }))}
-            >
-              <option value="INICIAL">INICIAL</option>
-              <option value="MONTAJE">MONTAJE</option>
-              <option value="FINAL">FINAL</option>
-            </select>
-          </div>
-          <div>
-            <label>Normativa</label>
-            <select
-              className="input"
-              value={form.normativa}
-              onChange={(e) => setForm((f) => ({ ...f, normativa: e.target.value }))}
-            >
-              <option value="ISE">ISE</option>
-              <option value="RIP02">RIP02</option>
-            </select>
-          </div>
-          <div>
-            <label>Observaciones</label>
-            <textarea
-              className="input"
-              rows={3}
-              value={form.observaciones}
-              onChange={(e) => setForm((f) => ({ ...f, observaciones: e.target.value }))}
-            />
-          </div>
-        </div>
+      <h3 className="sectionTitle">Información General</h3>
+        <table className="table excel">
+          <tbody>
+            <tr>
+              <td className="tcell" style={{width:180}}>Cliente</td>
+              <td className="tcell">
+                <select
+                  className="input"
+                  value={form.id_cliente}
+                  onChange={(e) => setForm((f) => ({ ...f, id_cliente: e.target.value, id_proyecto: "", id_tablero: "" }))}
+                >
+                  <option value="">-- Seleccionar --</option>
+                  {clientes.map((c) => (
+                    <option key={c.id_cliente} value={c.id_cliente}>{c.nombre}</option>
+                  ))}
+                </select>
+              </td>
+              <td className="tcell" style={{width:180}}>Nombre Integrador</td>
+              <td className="tcell">{nombreIntegrador || '-'}</td>
+            </tr>
+            <tr>
+              <td className="tcell">Proyecto</td>
+              <td className="tcell">
+                <select className="input" value={form.id_proyecto} onChange={(e) => setForm((f) => ({ ...f, id_proyecto: e.target.value, id_tablero: "" }))}>
+                  <option value="">-- Seleccionar --</option>
+                  {proyectos.map((p) => (<option key={p.id_proyecto} value={p.id_proyecto}>{p.nombre}</option>))}
+                </select>
+              </td>
+              <td className="tcell">Contacto</td>
+              <td className="tcell">{(clientes.find(c=>String(c.id_cliente)===String(form.id_cliente))||{}).contacto || '-'}</td>
+            </tr>
+            <tr>
+              <td className="tcell">Tipo de Tablero</td>
+              <td className="tcell">
+                <select className="input" value={form.id_tipo} onChange={(e)=>setForm(f=>({...f,id_tipo:e.target.value}))}>
+                  <option value="">-- Seleccionar --</option>
+                  {tipos.map((t)=>(<option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>))}
+                </select>
+              </td>
+              <td className="tcell">Codigo de Tablero</td>
+              <td className="tcell"><input className="input" value={form.codigo_tablero} onChange={(e)=>setForm(f=>({...f,codigo_tablero:e.target.value}))} placeholder="Ej: TAB-001" /></td>
+            </tr>
+            <tr>
+              <td className="tcell">Nombre del Tablero</td>
+              <td className="tcell">{detalleTablero?.codigo_tablero || form.codigo_tablero || '-'}</td>
+              <td className="tcell">Lugar de Inspeccion</td>
+              <td className="tcell">{detalleTablero?.ubicacion || '-'}</td>
+            </tr>
+            <tr>
+              <td className="tcell">N° Sol. Prod. u O/C.</td>
+              <td className="tcell"><input className="input" value={form.num_solicitud_oc} onChange={(e)=>setForm(f=>({...f,num_solicitud_oc:e.target.value}))} /></td>
+              <td className="tcell">Inspector de Calidad</td>
+              <td className="tcell"><input className="input" value={form.inspector} onChange={(e)=>setForm(f=>({...f,inspector:e.target.value}))} /></td>
+            </tr>
+            <tr>
+              <td className="tcell">N° Producto</td>
+              <td className="tcell"><input className="input" value={form.num_producto} onChange={(e)=>setForm(f=>({...f,num_producto:e.target.value}))} /></td>
+              <td className="tcell">Fecha de Inspeccion</td>
+              <td className="tcell"><input type="date" className="input" value={form.fecha_inspeccion} onChange={(e)=>setForm(f=>({...f,fecha_inspeccion:e.target.value}))} /></td>
+            </tr>
+            <tr>
+              <td className="tcell">N° de Serie</td>
+              <td className="tcell"><input className="input" value={form.num_serie} onChange={(e)=>setForm(f=>({...f,num_serie:e.target.value}))} /></td>
+              <td className="tcell">Conclusion de Calidad</td>
+              <td className="tcell"><input className="input" value={form.conclusion_calidad} onChange={(e)=>setForm(f=>({...f,conclusion_calidad:e.target.value}))} /></td>
+            </tr>
+            <tr>
+              <td className="tcell">Observaciones</td>
+              <td className="tcell" colSpan={3}>
+                <textarea className="input" rows={3} value={form.observaciones} onChange={(e) => setForm((f) => ({ ...f, observaciones: e.target.value }))} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
       {checkError && form.id_tablero && (
         <div className="section">
           <div className="text-red-600">{checkError}</div>
         </div>
       )}
-
       {grupos.map(([nombreGrupo, items]) => (
         <div key={nombreGrupo} className="section">
-          <table className="table">
+          <table className="table excel">
             <thead>
               <tr className="trow">
                 <th className="tcell" colSpan={4} style={{ textAlign: 'left' }}>{sectionHeaderNumero(items)}.0 {nombreGrupo}</th>
