@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 class RespuestaChecklistBase(BaseModel):
-    id_checklist: int
     id_inspeccion: int
+    id_item: int
     respuesta: Optional[str] = None
     observacion: Optional[str] = None
 

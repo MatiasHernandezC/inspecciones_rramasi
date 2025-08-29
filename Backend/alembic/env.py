@@ -1,27 +1,22 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
-
-import os
 from dotenv import load_dotenv
+import os, sys
 
-# Cargar variables de entorno
-load_dotenv()
+# Add backend folder to sys.path (two levels up from this file)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))  # .../backend
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
-# Importar tu Base
-from ..app.db.base_class import Base  # Aquí está tu declarative_base con todos los modelos
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
-# Config Alembic
+# Import Base with models imported so Alembic can see tables
+from app.models import Base
+
 config = context.config
 
-# Si existe fileConfig, carga el logging de alembic.ini
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
 
-# Metadata de tus modelos
-target_metadata = Base.metadata
-
-# Construir la URL desde .env
 def get_url():
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgres")
@@ -29,6 +24,14 @@ def get_url():
     port = os.getenv("POSTGRES_PORT", "5432")
     db = os.getenv("POSTGRES_DB", "inspecciones_db")
     return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
+
+
+target_metadata = Base.metadata
+
+# Configure logging from alembic.ini if present
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
 
 def run_migrations_offline():
     url = get_url()
@@ -38,6 +41,7 @@ def run_migrations_offline():
 
     with context.begin_transaction():
         context.run_migrations()
+
 
 def run_migrations_online():
     url = get_url()
@@ -53,7 +57,9 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
+
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+

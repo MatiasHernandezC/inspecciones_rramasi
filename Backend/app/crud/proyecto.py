@@ -9,8 +9,11 @@ def create_proyecto(db: Session, proyecto: ProyectoCreate):
     db.refresh(db_obj)
     return db_obj
 
-def get_proyectos(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Proyecto).offset(skip).limit(limit).all()
+def get_proyectos(db: Session, skip: int = 0, limit: int = 100, cliente: int | None = None):
+    q = db.query(Proyecto)
+    if cliente is not None:
+        q = q.filter(Proyecto.id_cliente == cliente)
+    return q.offset(skip).limit(limit).all()
 
 def get_proyecto(db: Session, proyecto_id: int):
     return db.query(Proyecto).filter(Proyecto.id_proyecto == proyecto_id).first()

@@ -8,6 +8,8 @@ class Cliente(Base):
 
     id_cliente = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String, nullable=False)
+    alias = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
     contacto = Column(String, nullable=True)
     direccion = Column(String, nullable=True)
     telefono = Column(String, nullable=True)

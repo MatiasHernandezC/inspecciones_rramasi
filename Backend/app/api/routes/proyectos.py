@@ -20,8 +20,8 @@ def crear_proyecto(proyecto: ProyectoCreate, db: Session = Depends(get_db)):
     return crud_proyecto.create_proyecto(db, proyecto)
 
 @router.get("/", response_model=List[ProyectoOut])
-def listar_proyectos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_proyecto.get_proyectos(db, skip, limit)
+def listar_proyectos(skip: int = 0, limit: int = 100, cliente: int | None = None, db: Session = Depends(get_db)):
+    return crud_proyecto.get_proyectos(db, skip, limit, cliente)
 
 @router.get("/{proyecto_id}", response_model=ProyectoOut)
 def obtener_proyecto(proyecto_id: int, db: Session = Depends(get_db)):

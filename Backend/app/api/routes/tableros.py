@@ -20,8 +20,8 @@ def crear_tablero(tablero: TableroCreate, db: Session = Depends(get_db)):
     return crud_tablero.create_tablero(db, tablero)
 
 @router.get("/", response_model=List[TableroOut])
-def listar_tableros(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_tablero.get_tableros(db, skip, limit)
+def listar_tableros(skip: int = 0, limit: int = 100, proyecto: int | None = None, db: Session = Depends(get_db)):
+    return crud_tablero.get_tableros(db, skip, limit, proyecto)
 
 @router.get("/{tablero_id}", response_model=TableroOut)
 def obtener_tablero(tablero_id: int, db: Session = Depends(get_db)):

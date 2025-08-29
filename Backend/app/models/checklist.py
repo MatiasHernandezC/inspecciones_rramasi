@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class Checklist(Base):
@@ -11,6 +10,3 @@ class Checklist(Base):
     tipo_item = Column(String, nullable=True)
     orden = Column(Integer, nullable=True)
     valor_default = Column(String, nullable=True)
-
-    tablero = relationship("Tablero", back_populates="checklists")
-    respuestas = relationship("RespuestaChecklist", back_populates="checklist")

@@ -6,6 +6,8 @@ from datetime import datetime
 class InformeBase(BaseModel):
     id_proyecto: int
     id_tablero: int
+    id_inspeccion: Optional[int] = None
+    numero_informe: Optional[str] = None
     tipo_informe: Optional[str] = None
     nombre_archivo: Optional[str] = None
     ruta_archivo: Optional[str] = None

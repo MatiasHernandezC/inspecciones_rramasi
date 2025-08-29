@@ -9,8 +9,11 @@ def create_tablero(db: Session, tablero: TableroCreate):
     db.refresh(db_obj)
     return db_obj
 
-def get_tableros(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Tablero).offset(skip).limit(limit).all()
+def get_tableros(db: Session, skip: int = 0, limit: int = 100, proyecto: int | None = None):
+    q = db.query(Tablero)
+    if proyecto is not None:
+        q = q.filter(Tablero.id_proyecto == proyecto)
+    return q.offset(skip).limit(limit).all()
 
 def get_tablero(db: Session, tablero_id: int):
     return db.query(Tablero).filter(Tablero.id_tablero == tablero_id).first()

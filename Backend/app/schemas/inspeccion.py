@@ -8,6 +8,8 @@ class InspeccionBase(BaseModel):
     id_tablero: int
     fecha_inspeccion: Optional[datetime] = None
     inspector: Optional[str] = None
+    tipo_visita: Optional[str] = None  # INICIAL|MONTAJE|FINAL
+    normativa: Optional[str] = None
     conclusion_calidad: Optional[str] = None
     observaciones: Optional[str] = None
     estado: Optional[str] = None
@@ -20,6 +22,8 @@ class InspeccionUpdate(InspeccionBase):
 
 class InspeccionOut(InspeccionBase):
     id_inspeccion: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True

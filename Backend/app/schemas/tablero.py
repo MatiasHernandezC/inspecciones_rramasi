@@ -5,8 +5,9 @@ from typing import Optional
 class TableroBase(BaseModel):
     id_proyecto: int
     codigo_tablero: str
-    tipo_tablero: Optional[str] = None
+    id_tipo: Optional[int] = None
     descripcion: Optional[str] = None
+    ubicacion: Optional[str] = None
 
 class TableroCreate(TableroBase):
     pass

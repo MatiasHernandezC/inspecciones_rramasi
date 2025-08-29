@@ -4,6 +4,8 @@ from datetime import datetime
 
 class ClienteBase(BaseModel):
     nombre: str
+    alias: Optional[str] = None
+    logo_url: Optional[str] = None
     contacto: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None

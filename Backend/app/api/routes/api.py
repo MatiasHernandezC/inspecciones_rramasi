@@ -8,7 +8,10 @@ from app.api.routes import (
     inspecciones,
     checklists,
     fotos,
-    informes
+    informes,
+    integradores,
+    tipos_tablero,
+    get_checklist
 )
 
 router = APIRouter()
@@ -21,3 +24,6 @@ router.include_router(checklists.router, prefix="/checklists", tags=["Checklists
 router.include_router(respuestas_checklist.router, prefix="/respuestas_checklists", tags=["RespuestasChecklists"])
 router.include_router(fotos.router, prefix="/fotos", tags=["Fotos"])
 router.include_router(informes.router, prefix="/informes", tags=["Informes"])
+router.include_router(integradores.router, prefix="/integradores", tags=["Integradores"])
+router.include_router(tipos_tablero.router, prefix="/tipos-tablero", tags=["TiposTablero"])
+router.include_router(get_checklist.router, tags=["ChecklistDinámico"])  # /get_checklist
