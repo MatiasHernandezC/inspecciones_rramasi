@@ -8,7 +8,7 @@ export default function InspeccionesPage(){
   const nav = useNavigate();
 
   useEffect(()=>{ (async()=>{
-    try{ setRows(await InspeccionesAPI.listar("")); }catch(e){ console.error(e); }
+    try{ setRows(await InspeccionesAPI.listar()); }catch(e){ console.error(e); }
   })(); },[]);
 
   return (
@@ -17,7 +17,7 @@ export default function InspeccionesPage(){
       <div className="section">
         <div className="row">
           <input className="input" placeholder="Buscar por cliente, proyecto..." value={q} onChange={e=>setQ(e.target.value)} />
-          <button className="btn secondary" onClick={async()=>setRows(await InspeccionesAPI.listar(q))}>Buscar</button>
+          <button className="btn secondary" onClick={async()=>setRows(await InspeccionesAPI.listar())}>Buscar</button>
           <div className="spacer"/>
           <button className="btn" onClick={()=>nav("/inspecciones/nueva")}>Nueva</button>
         </div>

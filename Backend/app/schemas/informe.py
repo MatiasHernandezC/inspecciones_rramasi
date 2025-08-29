@@ -1,5 +1,5 @@
 # schemas/informe.py
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -22,6 +22,4 @@ class InformeUpdate(InformeBase):
 
 class InformeOut(InformeBase):
     id_informe: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

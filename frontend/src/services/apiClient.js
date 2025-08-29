@@ -10,13 +10,15 @@ function joinUrl(base, path) {
   return `${base}${path}`;
 }
 
-export async function apiFetch(path, opts) {
+export async function apiFetch(path, opts = {}) {
   const url = joinUrl(API_BASE, path);
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...(opts?.headers || {}) },
-    credentials: "include",
-    ...opts,
-  });
+  const method = (opts.method || "GET").toUpperCase();
+  const headers = { ...(opts.headers || {}) };
+  // Solo establecer Content-Type si hay cuerpo (evita preflight en GET)
+  if (opts.body != null && headers["Content-Type"] == null) {
+    headers["Content-Type"] = "application/json";
+  }
+  const res = await fetch(url, { ...opts, method, headers, credentials: "include" });
   if (!res.ok) {
     // intentar extraer mensaje útil del backend
     let msg = `${res.status} ${res.statusText}`;

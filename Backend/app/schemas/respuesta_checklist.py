@@ -1,6 +1,6 @@
 # schemas/respuesta_checklist.py
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, List
 
 class RespuestaChecklistBase(BaseModel):
     id_inspeccion: int
@@ -16,6 +16,14 @@ class RespuestaChecklistUpdate(RespuestaChecklistBase):
 
 class RespuestaChecklistOut(RespuestaChecklistBase):
     id_respuesta: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+
+class RespuestaItemIn(BaseModel):
+    id_item: int
+    respuesta: Optional[str] = None
+    observacion: Optional[str] = None
+
+
+class RespuestasBulkIn(BaseModel):
+    respuestas: List[RespuestaItemIn]

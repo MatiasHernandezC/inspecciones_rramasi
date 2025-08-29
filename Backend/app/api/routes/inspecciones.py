@@ -4,6 +4,8 @@ from typing import List
 
 from app.crud import inspeccion as crud_inspeccion
 from app.schemas.inspeccion import InspeccionCreate, InspeccionOut, InspeccionUpdate
+from app.crud import respuesta_checklist as crud_respuestas
+from app.schemas.respuesta_checklist import RespuestasBulkIn
 from app.db.session import SessionLocal
 
 router = APIRouter()
@@ -43,3 +45,9 @@ def eliminar_inspeccion(inspeccion_id: int, db: Session = Depends(get_db)):
     if not db_obj:
         raise HTTPException(status_code=404, detail="Inspección no encontrada")
     return {"detail": "Inspección eliminada correctamente"}
+
+@router.post("/{inspeccion_id}/respuestas-bulk")
+def upsert_respuestas_bulk(inspeccion_id: int, payload: RespuestasBulkIn, db: Session = Depends(get_db)):
+    for r in payload.respuestas:
+        crud_respuestas.upsert_respuesta(db, inspeccion_id, r.id_item, r.respuesta, r.observacion)
+    return {"detail": "Respuestas guardadas"}

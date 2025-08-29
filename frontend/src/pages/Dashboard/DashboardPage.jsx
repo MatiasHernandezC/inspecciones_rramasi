@@ -1,35 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardPage(){
   const nav = useNavigate();
-  const [open, setOpen] = useState(false);
-  const planillas = [
-    { id: "base", label: "Planilla Base" },
-    { id: "electrica", label: "Instalaci√≥n El√©ctrica" },
-    { id: "seguridad", label: "Seguridad Industrial" },
-  ];
   return (
     <>
       <h2 style={{fontSize:22, fontWeight:800, marginTop:10}}>Acciones</h2>
 
       <section className="section">
-        <h3 className="sectionTitle">Nueva Inspecci√≥n</h3>
+        <h3 className="sectionTitle">Nueva InspecciÛn</h3>
         <div className="row">
-          <button className="btn" onClick={()=>nav("/inspecciones/nueva?tipo=base")}>Planilla Base</button>
+          <button className="btn" onClick={()=>nav("/inspecciones/nueva")}>Nueva InspecciÛn</button>
           <div className="spacer"/>
-          <div className="dropdown">
-            <button className="btn secondary" onClick={()=>setOpen(v=>!v)}>Escoger Planilla ‚ñæ</button>
-            {open && (
-              <div className="dropdownList" role="listbox">
-                {planillas.map(p=> (
-                  <div key={p.id} className="dropdownItem" onClick={()=>{ setOpen(false); nav(`/inspecciones/nueva?tipo=${p.id}`); }}>
-                    {p.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
@@ -42,10 +24,10 @@ export default function DashboardPage(){
       </section>
 
       <section className="section">
-        <h3 className="sectionTitle">Administrar im√°genes</h3>
+        <h3 className="sectionTitle">Administrar im·genes</h3>
         <div className="row">
-          <button className="btn ghost" onClick={()=>nav("/imagenes")}>Tomar Im√°genes</button>
-          <button className="btn secondary" onClick={()=>nav("/imagenes")}>Subir Im√°genes</button>
+          <button className="btn ghost" onClick={()=>nav("/imagenes")}>Tomar Im·genes</button>
+          <button className="btn secondary" onClick={()=>nav("/imagenes")}>Subir Im·genes</button>
           <button className="btn" onClick={()=>nav("/imagenes")}>Adjuntar a Proyecto</button>
         </div>
       </section>

@@ -45,19 +45,37 @@ def add_column_if_absent(table, column):
         with op.batch_alter_table(table) as batch_op:
             batch_op.add_column(column)
 
-def add_unique_if_absent(constraint_name, table, columns):
-    # No API directa para IF NOT EXISTS, probamos/ignoramos si ya existe
+def _has_unique(constraint_name, table):
+    insp = inspector()
     try:
-        op.create_unique_constraint(constraint_name, table, columns)
+        uqs = insp.get_unique_constraints(table)
     except Exception:
-        pass
+        return False
+    return any(uq.get("name") == constraint_name for uq in uqs)
+
+
+def add_unique_if_absent(constraint_name, table, columns):
+    if not _has_unique(constraint_name, table):
+        op.create_unique_constraint(constraint_name, table, columns)
+
+def _has_fk(constraint_name, source_table, referent_table, local_cols):
+    insp = inspector()
+    try:
+        fks = insp.get_foreign_keys(source_table)
+    except Exception:
+        return False
+    if constraint_name:
+        return any(fk.get("name") == constraint_name for fk in fks)
+    # Coincidencia por especificación
+    for fk in fks:
+        if fk.get("referred_table") == referent_table and fk.get("constrained_columns") == local_cols:
+            return True
+    return False
+
 
 def add_fk_if_absent(constraint_name, source_table, referent_table, local_cols, remote_cols, **kw):
-    try:
+    if not _has_fk(constraint_name, source_table, referent_table, local_cols):
         op.create_foreign_key(constraint_name, source_table, referent_table, local_cols, remote_cols, **kw)
-    except Exception:
-        # Si existe el mismo nombre o una FK equivalente, lo ignoramos
-        pass
 
 # --- Upgrade ---------------------------------------------------------------
 

@@ -18,6 +18,16 @@ MEMOIZATION_FLAG: bool = config("MEMOIZATION_FLAG", cast=bool, default=True)
 
 PROJECT_NAME: str = config("PROJECT_NAME", default="Inspecciones RRAMASI")
 
+# CORS origins (comma separated). Default to local dev React.
+_cors_origins = config(
+    "CORS_ORIGINS",
+    default=(
+        "http://localhost:3000,http://127.0.0.1:3000,"
+        "http://localhost:5173,http://127.0.0.1:5173"
+    ),
+)
+CORS_ORIGINS = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+
 # logging configuration
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 logging.basicConfig(
