@@ -44,7 +44,7 @@ export default function InspeccionesPage(){
                 <td className="tcell" style={{textAlign:'right'}}>
                   <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
                     <button className="btn secondary" onClick={()=>nav(`/inspecciones/${r.id}`)}>Abrir</button>
-                    {/* <button className="btn" onClick={()=>InspeccionesAPI.generarInforme(r.id)}>Generar informe</button> */}
+                    <button className="btn" onClick={()=>InspeccionesAPI.generarInforme(r.id)}>Generar informe</button>
                   </div>
                 </td>
               </tr>

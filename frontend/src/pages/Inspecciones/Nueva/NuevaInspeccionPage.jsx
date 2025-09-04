@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import ToggleTri from "../../../components/ui/ToggleTri";
+import CellSelect from "../../../components/ui/CellSelect";
 import { ClientesAPI } from "../../../services/clientes";
 import { ProyectosAPI } from "../../../services/proyectos";
 import { TablerosAPI } from "../../../services/tableros";
@@ -11,6 +12,7 @@ import { FotosAPI } from "../../../services/fotos";
 import CropperMini from "../../../components/media/CropperMini";
 import { IntegradoresAPI } from "../../../services/integradores";
 import { Divider } from "@mui/material";
+import { BorderColor } from "@mui/icons-material";
 
 export default function NuevaInspeccionPage() {
   const [clientes, setClientes] = useState([]);
@@ -40,7 +42,17 @@ export default function NuevaInspeccionPage() {
   const [detalleTablero, setDetalleTablero] = useState(null);
   const [nombreIntegrador, setNombreIntegrador] = useState("");
   const [tipoTableroNombre, setTipoTableroNombre] = useState("");
+  const [fotos, setFotos] = useState([]);
+  // Si ya existe inspección, cargar fotos para imprimir
+  useEffect(()=>{ (async()=>{
+    if(!inspeccionId) return;
+    try{
+      const list = await FotosAPI.listarPorInspeccion(inspeccionId);
+      setFotos(list.map(f=>f.ruta_archivo));
+    }catch(e){ console.error(e); }
+  })(); }, [inspeccionId]);
 
+  
   useEffect(() => {
     (async () => {
       try {
@@ -213,7 +225,7 @@ export default function NuevaInspeccionPage() {
       num_solicitud_oc: form.num_solicitud_oc || undefined,
       num_producto: form.num_producto || undefined,
       num_serie: form.num_serie || undefined,
-      estado: "draft",
+      estado: "Sin Pagar",
     };
     const created = await InspeccionesAPI.crear(payload);
     setInspeccionId(created.id_inspeccion);
@@ -250,13 +262,9 @@ export default function NuevaInspeccionPage() {
       alert(`Error al guardar: ${e.message}`);
     }
   };
-
   const onCropped = async (dataUrl) => {
     try {
-      let id = inspeccionId;
-      if (!id) {
-        id = await crearBorrador();
-      }
+      let id = inspeccionId || await crearBorrador();
       await FotosAPI.crear({
         id_proyecto: Number(form.id_proyecto),
         id_tablero: Number(form.id_tablero),
@@ -264,15 +272,28 @@ export default function NuevaInspeccionPage() {
         ruta_archivo: dataUrl,
         metadatos: JSON.stringify({ source: "cropperMini", ts: Date.now() }),
       });
+      // 1) feedback
       alert("Foto guardada");
+      // 2) que se vea inmediatamente en UI e impresión
+      setFotos(prev => [...prev, dataUrl]);
     } catch (e) {
       console.error(e);
       alert(`Error guardando foto: ${e.message}`);
     }
   };
-
   return (
-    <div>
+      <div className="print-root">
+        <div className="flex items-center justify-between mb-6 border-b border-slate-300 pb-2">
+        <img src="/logo.png" alt="Logo Empresa" className="h-14" />
+        <div className="text-center flex-1">
+          <h1 className="text-2xl font-bold text-slate-900">Informe de Inspección</h1>
+          <p className="text-sm text-slate-600">{detalleProyecto?.nombre || "-"}</p>
+        </div>
+        <span className="text-sm text-slate-500">
+          Fecha: {form.fecha_inspeccion || "-"}
+        </span>
+      </div>
+      <h2 className="title" style={{ fontSize: 32 }}>Nueva Inspección</h2>
       <div className="section">
       <h3 className="sectionTitle">Información General</h3>
         <table className="table excel">
@@ -281,7 +302,7 @@ export default function NuevaInspeccionPage() {
               <td className="tcell" style={{width:180}}>Cliente</td>
               <td className="tcell">
                 <select
-                  className="input"
+                  className="w-full border-0 focus:outline-none bg-transparent"
                   value={form.id_cliente}
                   onChange={(e) => setForm((f) => ({ ...f, id_cliente: e.target.value, id_proyecto: "", id_tablero: "" }))}
                 >
@@ -297,7 +318,7 @@ export default function NuevaInspeccionPage() {
             <tr>
               <td className="tcell">Proyecto</td>
               <td className="tcell">
-                <select className="input" value={form.id_proyecto} onChange={(e) => setForm((f) => ({ ...f, id_proyecto: e.target.value, id_tablero: "" }))}>
+                <select  className="w-full border-0 focus:outline-none bg-transparent" value={form.id_proyecto} onChange={(e) => setForm((f) => ({ ...f, id_proyecto: e.target.value, id_tablero: "" }))}>
                   <option value="">-- Seleccionar --</option>
                   {proyectos.map((p) => (<option key={p.id_proyecto} value={p.id_proyecto}>{p.nombre}</option>))}
                 </select>
@@ -308,13 +329,13 @@ export default function NuevaInspeccionPage() {
             <tr>
               <td className="tcell">Tipo de Tablero</td>
               <td className="tcell">
-                <select className="input" value={form.id_tipo} onChange={(e)=>setForm(f=>({...f,id_tipo:e.target.value}))}>
+                <select  className="w-full border-0 focus:outline-none bg-transparent" value={form.id_tipo} onChange={(e)=>setForm(f=>({...f,id_tipo:e.target.value}))}>
                   <option value="">-- Seleccionar --</option>
                   {tipos.map((t)=>(<option key={t.id_tipo} value={t.id_tipo}>{t.nombre}</option>))}
                 </select>
               </td>
               <td className="tcell">Codigo de Tablero</td>
-              <td className="tcell"><input className="input" value={form.codigo_tablero} onChange={(e)=>setForm(f=>({...f,codigo_tablero:e.target.value}))} placeholder="Ej: TAB-001" /></td>
+              <td className="tcell"><input className="w-full border-0 focus:outline-none bg-transparent" value={form.codigo_tablero} onChange={(e)=>setForm(f=>({...f,codigo_tablero:e.target.value}))} placeholder="Ej: TAB-001" /></td>
             </tr>
             <tr>
               <td className="tcell">Nombre del Tablero</td>
@@ -324,26 +345,29 @@ export default function NuevaInspeccionPage() {
             </tr>
             <tr>
               <td className="tcell">N° Sol. Prod. u O/C.</td>
-              <td className="tcell"><input className="input" value={form.num_solicitud_oc} onChange={(e)=>setForm(f=>({...f,num_solicitud_oc:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.num_solicitud_oc} onChange={(e)=>setForm(f=>({...f,num_solicitud_oc:e.target.value}))} /></td>
               <td className="tcell">Inspector de Calidad</td>
-              <td className="tcell"><input className="input" value={form.inspector} onChange={(e)=>setForm(f=>({...f,inspector:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.inspector} onChange={(e)=>setForm(f=>({...f,inspector:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">N° Producto</td>
-              <td className="tcell"><input className="input" value={form.num_producto} onChange={(e)=>setForm(f=>({...f,num_producto:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.num_producto} onChange={(e)=>setForm(f=>({...f,num_producto:e.target.value}))} /></td>
               <td className="tcell">Fecha de Inspeccion</td>
-              <td className="tcell"><input type="date" className="input" value={form.fecha_inspeccion} onChange={(e)=>setForm(f=>({...f,fecha_inspeccion:e.target.value}))} /></td>
+              <td className="tcell"><input type="date"  className="w-full border-0 focus:outline-none bg-transparent" value={form.fecha_inspeccion} onChange={(e)=>setForm(f=>({...f,fecha_inspeccion:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">N° de Serie</td>
-              <td className="tcell"><input className="input" value={form.num_serie} onChange={(e)=>setForm(f=>({...f,num_serie:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.num_serie} onChange={(e)=>setForm(f=>({...f,num_serie:e.target.value}))} /></td>
               <td className="tcell">Conclusion de Calidad</td>
-              <td className="tcell"><input className="input" value={form.conclusion_calidad} onChange={(e)=>setForm(f=>({...f,conclusion_calidad:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.conclusion_calidad} onChange={(e)=>setForm(f=>({...f,conclusion_calidad:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">Observaciones</td>
               <td className="tcell" colSpan={3}>
-                <textarea className="input" rows={3} value={form.observaciones} onChange={(e) => setForm((f) => ({ ...f, observaciones: e.target.value }))} />
+                <textarea  
+                  className="w-full border-0 focus:outline-none bg-transparent" 
+                  rows={3} value={form.observaciones} 
+                  onChange={(e) => setForm((f) => ({ ...f, observaciones: e.target.value }))} />
               </td>
             </tr>
           </tbody>
@@ -354,18 +378,21 @@ export default function NuevaInspeccionPage() {
           <div className="text-red-600">{checkError}</div>
         </div>
       )}
+      <div className="section">
       {grupos.map(([nombreGrupo, items]) => (
-        <div key={nombreGrupo} className="section">
+        
           <table className="table excel">
             <thead>
               <tr className="trow">
-                <th className="tcell" colSpan={4} style={{ textAlign: 'left' }}>{sectionHeaderNumero(items)}.0 {nombreGrupo}</th>
+                <th className="tcell" colSpan={6} style={{ textAlign: 'left' }}>{sectionHeaderNumero(items)}.0 {nombreGrupo}</th>
               </tr>
               <tr className="trow">
-                <th className="tcell" style={{ width: 120 }}>Ítem</th>
-                <th className="tcell">Descripción</th>
-                <th className="tcell" style={{ width: 240 }}>Valor</th>
-                <th className="tcell" style={{ width: 240 }}>Observación</th>
+                <th className="tcell w-[70px]">Item</th>
+                <th className="tcell">Descripcion</th>
+                <th className="tcell w-[45px] text-center">Pasa</th>
+                <th className="tcell w-[45px] text-center">Falla</th>
+                <th className="tcell w-[45px] text-center">N/A</th>
+                <th className="tcell w-[260px]">Observacion</th>
               </tr>
             </thead>
             <tbody>
@@ -373,40 +400,66 @@ export default function NuevaInspeccionPage() {
                 <tr key={it.id} className="trow">
                   <td className="tcell">{extractNumero(it.label)}</td>
                   <td className="tcell">{extractDescripcion(it.label)}</td>
+                  {renderValorCeldas(it, res[it.id]?.v || res[it.id]?.valor || "", (v)=>setValor(it.id, { v }))}
                   <td className="tcell">
-                    {renderInput(
-                      it,
-                      res[it.id]?.v || res[it.id]?.valor || "",
-                      (v) => setValor(it.id, { v })
-                    )}
-                  </td>
-                  <td className="tcell">
-                    <input
-                      className="input"
-                      placeholder="Observación"
+                    <textarea
+                      className="w-full resize-none focus:outline-none bg-transparent overflow-hidden"
+                      placeholder="Observacion"
                       value={res[it.id]?.obs || ""}
-                      onChange={(e) => setValor(it.id, { obs: e.target.value })}
+                      onChange={(e) => {
+                        setValor(it.id, { obs: e.target.value });
+                        // Ajuste automático del alto
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      rows={1} // empieza como una línea
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        
       ))}
-
-      <div className="section">
-        <h3 className="sectionTitle">Registro fotográfico (básico)</h3>
-        <CropperMini onCropped={onCropped} />
       </div>
 
-      <div className="row" style={{ marginTop: 16 }}>
-        <button className="btn secondary" onClick={crearBorrador}>
-          Guardar borrador
-        </button>
-        <button className="btn" onClick={guardarContinuar}>
-          Guardar y continuar
-        </button>
+      {/* Vista para imprimir: sí se muestra */}
+      {fotos.length > 0 && (
+        <div className="section">
+  <h3 className="sectionTitle">Registro fotográfico</h3>
+  <div className="photos-grid mt-2">
+    {fotos.map((src, i) => (
+      <figure key={i} className="text-center">
+        <img src={src} alt={`Foto ${i+1}`} className="photo-item" />
+        <figcaption className="text-xs text-slate-600 mt-1">Foto {i+1}</figcaption>
+      </figure>
+    ))}
+  </div>
+</div>
+
+      )}
+
+      {/* Herramienta de captura: no se imprime por .no-print */}
+      <div className="section">
+        <h3 className="sectionTitle no-print">Registro fotográfico (básico)</h3>
+        <div className="row">
+          <div className="no-print" style={{maxWidth:360}}>
+            <CropperMini onCropped={onCropped} />
+          </div>
+        </div>
+        {fotos.length > 0 && (
+          <div className="photos-grid" style={{marginTop:12}}>
+            {fotos.map((src, idx) => (
+              <img key={idx} className="photo-item" src={src} alt={`Foto ${idx+1}`} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="row no-print" style={{ marginTop: 16, justifyContent:'flex-end' }}>
+        <button className="btn secondary" onClick={()=>window.print()}>Generar Informe</button>
+        <button className="btn secondary" onClick={crearBorrador}>Guardar borrador</button>
+        <button className="btn" onClick={guardarContinuar}>Guardar y continuar</button>
       </div>
     </div>
   );
@@ -435,7 +488,14 @@ function renderInput(item, value, onChange) {
   const t = item.type;
   const rules = item.rules || {};
   if (t === "boolean") {
-    return <ToggleTri name={`tri-${item.id}`} value={value} onChange={onChange} />;
+    return (
+      <CellSelect
+        value={value}
+        onChange={onChange}
+        options={["PASA", "FALLA", "N/A"]}
+        className="w-full"
+      />
+    );
   }
   if (t === "number") {
     return (
@@ -452,20 +512,13 @@ function renderInput(item, value, onChange) {
   if (t === "select") {
     const opts = rules.options || [];
     return (
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">-- Seleccionar --</option>
-        {opts.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
+      <CellSelect value={value} onChange={onChange} options={opts} className="w-full" />
     );
   }
   if (t === "text") {
-    return <input className="input" value={value} onChange={(e) => onChange(e.target.value)} />;
+    return <input  className="w-full border-0 focus:outline-none bg-transparent" value={value} onChange={(e) => onChange(e.target.value)} />;
   }
-  return <input className="input" value={value} onChange={(e) => onChange(e.target.value)} />;
+  return <input  className="w-full border-0 focus:outline-none bg-transparent" value={value} onChange={(e) => onChange(e.target.value)} />;
 }
 
 function sectionHeaderNumero(items) {
@@ -474,3 +527,27 @@ function sectionHeaderNumero(items) {
   const num = extractNumero(first.label);
   return (num && String(num).split('.')[0]) || '';
 }
+
+function renderValorCeldas(item, value, onChange){
+  const t = item.type;
+  if (t === 'boolean'){
+    const sel = String(value || '').toUpperCase();
+    const mk = (key) => (
+      <td className="tcell" style={{textAlign:'center', cursor:'pointer', backgroundColor: sel===key ? '#eee' : 'transparent'}} onClick={()=>onChange(key)}>
+        <span>{sel === key ? ' ✓' : ' '}</span>
+      </td>
+    );
+    return (<>
+      {mk('PASA')}
+      {mk('FALLA')}
+      {mk('N/A')}
+    </>);
+  }
+  return (
+    <td className="tcell" colSpan={3}>
+      {renderInput(item, value, onChange)}
+    </td>
+  );
+}
+
+

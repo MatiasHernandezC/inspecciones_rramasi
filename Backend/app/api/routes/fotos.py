@@ -20,8 +20,15 @@ def crear_foto(foto: FotoCreate, db: Session = Depends(get_db)):
     return crud_foto.create_foto(db, foto)
 
 @router.get("/", response_model=List[FotoOut])
-def listar_fotos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_foto.get_fotos(db, skip, limit)
+def listar_fotos(
+    skip: int = 0,
+    limit: int = 100,
+    inspeccion: int | None = None,
+    proyecto: int | None = None,
+    tablero: int | None = None,
+    db: Session = Depends(get_db),
+):
+    return crud_foto.get_fotos(db, skip, limit, inspeccion, proyecto, tablero)
 
 @router.get("/{foto_id}", response_model=FotoOut)
 def obtener_foto(foto_id: int, db: Session = Depends(get_db)):

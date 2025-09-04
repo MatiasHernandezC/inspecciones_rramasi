@@ -9,8 +9,15 @@ def create_foto(db: Session, foto: FotoCreate):
     db.refresh(db_obj)
     return db_obj
 
-def get_fotos(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Foto).offset(skip).limit(limit).all()
+def get_fotos(db: Session, skip: int = 0, limit: int = 100, id_inspeccion: int | None = None, id_proyecto: int | None = None, id_tablero: int | None = None):
+    q = db.query(Foto)
+    if id_inspeccion is not None:
+        q = q.filter(Foto.id_inspeccion == id_inspeccion)
+    if id_proyecto is not None:
+        q = q.filter(Foto.id_proyecto == id_proyecto)
+    if id_tablero is not None:
+        q = q.filter(Foto.id_tablero == id_tablero)
+    return q.order_by(Foto.fecha_captura.desc().nullslast(), Foto.id_foto.desc()).offset(skip).limit(limit).all()
 
 def get_foto(db: Session, foto_id: int):
     return db.query(Foto).filter(Foto.id_foto == foto_id).first()

@@ -18,8 +18,9 @@ export default function DashboardPage(){
       <section className="section">
         <h3 className="sectionTitle">Revisar Proyectos</h3>
         <div className="row">
-          <div className="spacer"/>
+          
           <button className="btn" onClick={()=>nav("/inspecciones")}>Ir a revisar proyectos</button>
+          <div className="spacer"/>
         </div>
       </section>
 
