@@ -387,7 +387,7 @@ export default function NuevaInspeccionPage() {
                 <th className="tcell" colSpan={6} style={{ textAlign: 'left' }}>{sectionHeaderNumero(items)}.0 {nombreGrupo}</th>
               </tr>
               <tr className="trow">
-                <th className="tcell w-[70px]">Item</th>
+                <th className="tcell w-[30px]">Item</th>
                 <th className="tcell">Descripcion</th>
                 <th className="tcell w-[45px] text-center">Pasa</th>
                 <th className="tcell w-[45px] text-center">Falla</th>

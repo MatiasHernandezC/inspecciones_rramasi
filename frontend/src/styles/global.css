@@ -2,14 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base resets and typography */
 @layer base {
   *, *::before, *::after { @apply box-border; }
   html { @apply antialiased; }
   body { @apply m-0 font-sans bg-slate-50 text-slate-900; }
 }
 
-/* Component layer mapping previous classes to Tailwind utilities */
 @layer components {
   .section { @apply mt-5 rounded-xl bg-white p-6 ring-1 ring-slate-200 shadow-sm; }
   .sectionTitle { @apply mb-3 text-2xl font-extrabold text-slate-900; }
@@ -30,89 +28,81 @@
   .trow { @apply rounded-lg bg-white ring-1 ring-slate-200; }
   .tcell { @apply px-3 py-2; }
 
-  /* Excel-like table variant */
   .table.excel { @apply w-full border-collapse; }
-  .table.excel thead th { @apply bg-slate-100 font-bold text-slate-800 border border-slate-300 text-xs; }
+  .table.excel thead th { @apply bg-slate-100 font-bold text-slate-800 border border-slate-300 text-xs; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .table.excel tbody td { @apply border border-slate-300 text-xs; }
-  .table.excel .tcell { @apply py-1 px-2; }
-  .table.excel .input { @apply text-sm py-1 px-2; height: 2rem; }
-  .excel-cell-select:focus .excel-cell { @apply ring-2 ring-blue-300; }
-  .excel-cell { min-height: 2rem; padding: .25rem .4rem; }
-  .table.excel .section-head { @apply bg-slate-200 font-extrabold text-slate-900; }
-  .table.excel .trow { @apply ring-0; }
 
-  /* Datos del Informe: tabla profesional */
   .info-table { @apply w-full border-collapse; }
   .info-table td { @apply border border-slate-300 text-xs py-1 px-2; }
-  .info-table tr > td:nth-child(1),
-  .info-table tr > td:nth-child(3) { @apply bg-slate-100 font-bold whitespace-nowrap; width: 180px; }
 
-  .badge { @apply inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-bold text-blue-800; }
-  .radioRow { @apply flex items-center gap-4; }
-  .radioRow label { @apply inline-flex items-center gap-1.5; }
-
-  /* Navbar helper if referenced elsewhere */
-  .navBtn { @apply inline-flex items-center rounded-lg bg-white/15 px-3 py-2 font-semibold text-white backdrop-blur hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/60; }
-}
-
-/* Responsive helpers for legacy classes if needed */
-@media (max-width: 720px) {
-  .grid2 { grid-template-columns: 1fr; }
-}
-/* en global.css */
-.photos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-}
-.photo-item {
-  width: 100%;
-  border-radius: 6px;
-  object-fit: cover;
-  border: 1px solid #ddd;
-  page-break-inside: avoid;
+  .photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .photo-item { width: 100%; border-radius: 6px; object-fit: cover; border: 1px solid #ddd; page-break-inside: avoid; }
 }
 
 /* Print styles */
 @media print {
-  /* Márgenes reales en todas las páginas */
   @page {
     size: A4 portrait;
-    margin-top: 15mm;   /* margen superior */
-    margin-right: 15mm;
-    margin-bottom: 15mm;
-    margin-left: 15mm;
+    margin: 15mm;
   }
-
+  .no-print {
+    display: none !important;
+  }
   html, body {
     margin: 0 !important;
     padding: 0 !important;
+    font-size: 10pt !important;
+    color: #000 !important;
+    background: #fff !important;
   }
 
   .print-root {
-    margin: 0 !important;
-    padding-top: 0 !important;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    page-break-after: always;
   }
-  body { background: #fff !important; color: #000 !important; font-size: 9px !important; }
 
-  /* Lo que no quieres imprimir */
   nav[role="navigation"], .no-print, .title, .sectionTitle { display: none !important; }
 
-  .section { box-shadow: none !important; -webkit-box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 10mm; }
+  /* Layout simplificado */
+  .row { display: block !important; }
+  .grid2, .grid3 { display: block !important; }
 
-  .table.excel { border-collapse: collapse; width: 100% !important; }
-  .table.excel thead th { 
-    background: #eeeeee !important; 
-    -webkit-print-color-adjust: exact; print-color-adjust: exact; 
-    font-size: 9px !important; 
+  /* Tablas para impresión */
+  .info-table tr > td:nth-child(1) {
+    background: #eee !important;
+    width: 40mm; /* Campo más pequeño */
   }
-  .table.excel th, .table.excel td { border: 1px solid #999 !important; font-size: 9px !important; padding: 2px 4px !important; }
+  .info-table tr > td:nth-child(2) {
+    width: 90mm; /* Descripción más grande */
+  }
+  .info-table tr > td:nth-child(3) {
+    background: #eee !important;
+    width: 60mm; /* Observaciones más angosta */
+  }
 
-  .info-table td { border: 1px solid #999 !important; font-size: 9px !important; padding: 2px 4px !important; }
-  .info-table tr > td:nth-child(1),
-  .info-table tr > td:nth-child(3) { background: #eee !important; }
+  /* 👈 agregado: compactar texto en impresión */
+  .table.excel th, .table.excel td,
+  .info-table td {
+    font-size: 8pt !important;
+    padding: 1mm 1.5mm !important;
+  }
 
-  /* Galería de fotos para impresión */
-  .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8mm; }
-  .photo-item { width: 100%; height: auto; break-inside: avoid; page-break-inside: avoid; }
+  .table.excel th {
+    font-weight: 600 !important; /* menos bold */
+  }
+
+  /* 👈 agregado: eliminar línea gris/efecto ring */
+  .trow {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important; /* si quieres mantener división suave */
+  }
+  .table {
+    border-spacing: 0 !important; /* quita huecos que dibujan rayitas */
+  }
+
+  .section { box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 10mm; }
+  .photo-item { break-inside: avoid; page-break-inside: avoid; }
 }

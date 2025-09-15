@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import ToggleTri from "../../../components/ui/ToggleTri";
 import CellSelect from "../../../components/ui/CellSelect";
+import CropperMini from "../../../components/media/CropperMini";
 import { ClientesAPI } from "../../../services/clientes";
 import { ProyectosAPI } from "../../../services/proyectos";
 import { TablerosAPI } from "../../../services/tableros";
@@ -10,7 +10,6 @@ import { ChecklistAPI } from "../../../services/checklist";
 import { InspeccionesAPI } from "../../../services/inspecciones";
 import { RespuestasAPI } from "../../../services/respuestas";
 import { FotosAPI } from "../../../services/fotos";
-import CropperMini from "../../../components/media/CropperMini";
 import { IntegradoresAPI } from "../../../services/integradores";
 
 export default function EditarInspeccionPage() {
@@ -18,7 +17,6 @@ export default function EditarInspeccionPage() {
   const [clientes, setClientes] = useState([]);
   const [proyectos, setProyectos] = useState([]);
   const [tipos, setTipos] = useState([]);
-
   const [form, setForm] = useState({
     id_cliente: "",
     id_proyecto: "",
@@ -47,10 +45,8 @@ export default function EditarInspeccionPage() {
         setClientes(await ClientesAPI.listar({ limit: 1000 }));
         setTipos(await TiposTableroAPI.listar({ limit: 1000 }));
         const insp = await InspeccionesAPI.obtener(id);
-        // Proyecto y cliente para combos
         const prj = await ProyectosAPI.obtener(insp.id_proyecto);
         setProyectos(await ProyectosAPI.listarPorCliente(prj.id_cliente));
-        // Tablero y tipo
         const tb = await TablerosAPI.obtener(insp.id_tablero);
         setDetalleTablero(tb);
         const tipo = tb.id_tipo ? await TiposTableroAPI.obtener(tb.id_tipo) : null;
@@ -76,16 +72,13 @@ export default function EditarInspeccionPage() {
           num_producto: insp.num_producto || "",
           num_serie: insp.num_serie || "",
         }));
-        // Checklist (por tablero)
         await loadChecklist(tb.id_tablero, tb.id_tipo);
-        // Respuestas
         const rs = await RespuestasAPI.listarPorInspeccion(id);
         const map = {};
         for (const r of rs) {
           map[r.id_item] = { v: r.respuesta || "", obs: r.observacion || "" };
         }
         setRes(map);
-        // Fotos de la inspección
         try {
           const lf = await FotosAPI.listarPorInspeccion(id);
           setFotos(lf.map(f => f.ruta_archivo));
@@ -157,7 +150,18 @@ export default function EditarInspeccionPage() {
   return (
     <div className="print-root">
       <h2 className="title" style={{ fontSize: 32 }}>Inspección #{id}</h2>
-
+      <div className="flex items-center justify-between mb-6 border-b border-slate-300 pb-2">
+        <span className="text-sm text-slate-500">
+          Fecha: {form.fecha_inspeccion || "-"}
+        </span>
+        <div className="text-center flex-1">
+          <h1 className="text-2xl font-bold text-slate-900">Informe de Inspección</h1>
+          <p className="text-sm text-slate-600">{detalleTablero?.codigo_tablero || "-"}</p>
+        </div>
+        <img src={(clientes.find(c=>String(c.id_cliente)===String(form.id_cliente))||{}).logo_url || "/logo.png"} alt="Logo Empresa" className="h-14" />
+      </div>
+      
+      {/* Información General */}
       <div className="section">
         <h3 className="sectionTitle">Información General</h3>
         <table className="table excel">
@@ -188,21 +192,21 @@ export default function EditarInspeccionPage() {
             </tr>
             <tr>
               <td className="tcell">N° Sol. Prod. u O/C.</td>
-              <td className="tcell"><input className="input" value={form.num_solicitud_oc} onChange={(e)=>setForm(f=>({...f,num_solicitud_oc:e.target.value}))} /></td>
+              <td className="tcell"><input className="w-full border-0 focus:outline-none bg-transparent" value={form.num_solicitud_oc} onChange={(e)=>setForm(f=>({...f,num_solicitud_oc:e.target.value}))} /></td>
               <td className="tcell">Inspector de Calidad</td>
-              <td className="tcell"><input className="input" value={form.inspector} onChange={(e)=>setForm(f=>({...f,inspector:e.target.value}))} /></td>
+              <td className="tcell"><input className="w-full border-0 focus:outline-none bg-transparent" value={form.inspector} onChange={(e)=>setForm(f=>({...f,inspector:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">N° Producto</td>
-              <td className="tcell"><input className="input" value={form.num_producto} onChange={(e)=>setForm(f=>({...f,num_producto:e.target.value}))} /></td>
+              <td className="tcell"><input  className="w-full border-0 focus:outline-none bg-transparent" value={form.num_producto} onChange={(e)=>setForm(f=>({...f,num_producto:e.target.value}))} /></td>
               <td className="tcell">Fecha de Inspeccion</td>
-              <td className="tcell"><input type="date" className="input" value={form.fecha_inspeccion} onChange={(e)=>setForm(f=>({...f,fecha_inspeccion:e.target.value}))} /></td>
+              <td className="tcell"><input type="date"  className="w-full border-0 focus:outline-none bg-transparent" value={form.fecha_inspeccion} onChange={(e)=>setForm(f=>({...f,fecha_inspeccion:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">N° de Serie</td>
-              <td className="tcell"><input className="input" value={form.num_serie} onChange={(e)=>setForm(f=>({...f,num_serie:e.target.value}))} /></td>
+              <td className="tcell"><input className="w-full border-0 focus:outline-none bg-transparent" value={form.num_serie} onChange={(e)=>setForm(f=>({...f,num_serie:e.target.value}))} /></td>
               <td className="tcell">Conclusion de Calidad</td>
-              <td className="tcell"><input className="input" value={form.conclusion_calidad} onChange={(e)=>setForm(f=>({...f,conclusion_calidad:e.target.value}))} /></td>
+              <td className="tcell"><input className="w-full border-0 focus:outline-none bg-transparent" value={form.conclusion_calidad} onChange={(e)=>setForm(f=>({...f,conclusion_calidad:e.target.value}))} /></td>
             </tr>
             <tr>
               <td className="tcell">Observaciones</td>
@@ -219,21 +223,22 @@ export default function EditarInspeccionPage() {
           <div className="text-red-600">{checkError}</div>
         </div>
       )}
+
+      {/* Checklist */}
       <div className="section">
-      {grupos.map(([nombreGrupo, items]) => (
-        
-          <table className="table excel">
+        {grupos.map(([nombreGrupo, items]) => (
+          <table className="table excel" key={nombreGrupo}>
             <thead>
               <tr className="trow">
                 <th className="tcell" colSpan={6} style={{ textAlign: 'left' }}>{sectionHeaderNumero(items)}.0 {nombreGrupo}</th>
               </tr>
               <tr className="trow">
-                <th className="tcell" style={{ width: 70 }}>Item</th>
+                <th className="tcell w-[30px]">Item</th>
                 <th className="tcell">Descripcion</th>
-                <th className="tcell" style={{ width: 45, textAlign:'center' }}>Pasa</th>
-                <th className="tcell" style={{ width: 45, textAlign:'center' }}>Falla</th>
-                <th className="tcell" style={{ width: 45, textAlign:'center' }}>N/A</th>
-                <th className="tcell" style={{ width: 220 }}>Observacion</th>
+                <th className="tcell w-[45px] text-center">Pasa</th>
+                <th className="tcell w-[45px] text-center">Falla</th>
+                <th className="tcell w-[45px] text-center">N/A</th>
+                <th className="tcell w-[220px]">Observacion</th>
               </tr>
             </thead>
             <tbody>
@@ -249,41 +254,45 @@ export default function EditarInspeccionPage() {
                       value={res[it.id]?.obs || ""}
                       onChange={(e) => {
                         setValor(it.id, { obs: e.target.value });
-                        // Ajuste automático del alto
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
                       }}
-                      rows={1} // empieza como una línea
+                      rows={1}
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        
-      ))}
+        ))}
       </div>
+
+      {/* Fotos */}
       <div className="section">
         <h3 className="sectionTitle no-print">Registro fotografico (basico)</h3>
         <div className="no-print" style={{maxWidth:360}}>
           <CropperMini onCropped={async (dataUrl)=>{
-          try{
-            await FotosAPI.crear({ id_proyecto: Number(form.id_proyecto), id_tablero: Number(form.id_tablero), id_inspeccion: Number(id), ruta_archivo: dataUrl, metadatos: JSON.stringify({ source: 'cropperMini', ts: Date.now() }) });
-            alert('Foto guardada');
-            setFotos(prev => [...prev, dataUrl]);
-          }catch(e){ console.error(e); alert(`Error guardando foto: ${e.message}`); }
-        }} />
+            try{
+              await FotosAPI.crear({ id_proyecto: Number(form.id_proyecto), id_tablero: Number(form.id_tablero), id_inspeccion: Number(id), ruta_archivo: dataUrl, metadatos: JSON.stringify({ source: 'cropperMini', ts: Date.now() }) });
+              alert('Foto guardada');
+              setFotos(prev => [...prev, dataUrl]);
+            }catch(e){ console.error(e); alert(`Error guardando foto: ${e.message}`); }
+          }} />
         </div>
         {fotos.length > 0 && (
           <div className="photos-grid" style={{marginTop:12}}>
             {fotos.map((src, i)=> (
-              <img key={i} className="photo-item" src={src} alt={`Foto ${i+1}`} />
+              <figure key={i} className="text-center">
+                <img src={src} alt={`Foto ${i+1}`} className="photo-item" />
+                <figcaption className="text-xs text-slate-600 mt-1">Foto {i+1}</figcaption>
+              </figure>
             ))}
           </div>
         )}
       </div>
 
-      <div className="row no-print" style={{marginTop:16, justifyContent:'flex-end'}}>
+      {/* Botones */}
+      <div className="flex justify-end gap-3 mt-6 no-print">
         <button className="btn secondary" onClick={()=>window.print()}>Generar Informe</button>
         <button className="btn" onClick={guardar}>Guardar</button>
       </div>
@@ -291,6 +300,7 @@ export default function EditarInspeccionPage() {
   );
 }
 
+// Helpers
 function safeJson(s){ try{ return JSON.parse(s); }catch(_){ return null; } }
 function extractNumero(label){ if(!label) return ""; const m=String(label).trim().match(/^([0-9]+(?:\.[0-9]+)*)\b/); return m?m[1]:""; }
 function extractDescripcion(label){ if(!label) return ""; return String(label).trim().replace(/^([0-9]+(?:\.[0-9]+)*)\s*/, ""); }
@@ -307,19 +317,9 @@ function renderInput(item, value, onChange){
       />
     );
   }
-  if (t === "number") {
-    return (
-      <input type="number" className="input" value={value} onChange={(e)=>onChange(e.target.value)} min={rules.min} max={rules.max} />
-    );
-  }
-  if (t === "select") {
-    const opts = rules.options || [];
-    return (<CellSelect value={value} onChange={onChange} options={opts} className="w-full" />);
-  }
-  if (t === "text") {
-    return (<input className="input" value={value} onChange={(e)=>onChange(e.target.value)} />);
-  }
-  return (<input className="input" value={value} onChange={(e)=>onChange(e.target.value)} />);
+  if (t === "number") return (<input type="number" className="input" value={value} onChange={(e)=>onChange(e.target.value)} min={rules.min} max={rules.max} />);
+  if (t === "select") return (<CellSelect value={value} onChange={onChange} options={rules.options || []} className="w-full" />);
+  return (<input className="w-full border-0 focus:outline-none bg-transparent" value={value} onChange={(e)=>onChange(e.target.value)} />);
 }
 function sectionHeaderNumero(items) {
   if (!items || !items.length) return '';
@@ -328,24 +328,14 @@ function sectionHeaderNumero(items) {
   return (num && String(num).split('.')[0]) || '';
 }
 function renderValorCeldas(item, value, onChange){
-  const t = item.type;
-  if (t === 'boolean'){
+  if (item.type === 'boolean'){
     const sel = String(value || '').toUpperCase();
     const mk = (key) => (
       <td className="tcell" style={{textAlign:'center', cursor:'pointer', backgroundColor: sel===key ? '#eee' : 'transparent'}} onClick={()=>onChange(key)}>
         <span>{sel === key ? ' ✓' : ' '}</span>
       </td>
     );
-    return (<>
-      {mk('PASA')}
-      {mk('FALLA')}
-      {mk('N/A')}
-    </>);
+    return (<>{mk('PASA')}{mk('FALLA')}{mk('N/A')}</>);
   }
-  return (
-    <td className="tcell" colSpan={3}>
-      {renderInput(item, value, onChange)}
-    </td>
-  );
+  return (<td className="tcell" colSpan={3}>{renderInput(item, value, onChange)}</td>);
 }
-
