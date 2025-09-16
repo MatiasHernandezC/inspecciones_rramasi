@@ -32,7 +32,14 @@ export default function Navbar() {
             >
               Nueva Inspección
             </Link>
+            <Link
+              to="/clientes"
+              className="inline-flex items-center rounded-lg bg-white/15 px-3 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/60"
+            >
+              Clientes
+            </Link>
           </div>
+
 
           <button
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/60 sm:hidden"
