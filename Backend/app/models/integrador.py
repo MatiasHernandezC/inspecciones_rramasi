@@ -16,4 +16,5 @@ class Integrador(Base):
     activo = Column(Boolean, default=True)
 
     proyectos = relationship("Proyecto", back_populates="integrador")
+    fotos = relationship("Foto", back_populates="integrador")
 

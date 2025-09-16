@@ -23,3 +23,4 @@ class Informe(Base):
     proyecto = relationship("Proyecto", back_populates="informes")
     tablero = relationship("Tablero", back_populates="informes")
     inspeccion = relationship("Inspeccion")
+    fotos = relationship("Foto", back_populates="informe")

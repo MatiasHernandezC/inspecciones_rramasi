@@ -17,3 +17,4 @@ class Cliente(Base):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
 
     proyectos = relationship("Proyecto", back_populates="cliente")
+    fotos = relationship("Foto", back_populates="cliente")

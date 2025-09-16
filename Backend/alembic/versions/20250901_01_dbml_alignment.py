@@ -265,21 +265,64 @@ def upgrade() -> None:
         add_unique_if_absent('uq_respuesta_inspeccion_item', 'respuesta_checklist', ['id_inspeccion', 'id_item'])
 
     # FOTO
+    # FOTO
     if not has_table('foto'):
         op.create_table(
             'foto',
             sa.Column('id_foto', sa.Integer(), primary_key=True, autoincrement=True),
-            sa.Column('id_inspeccion', sa.Integer(), nullable=False),
+            sa.Column('id_cliente', sa.Integer(), nullable=True),
+            sa.Column('id_proyecto', sa.Integer(), nullable=True),
+            sa.Column('id_tablero', sa.Integer(), nullable=True),
+            sa.Column('id_inspeccion', sa.Integer(), nullable=True),
             sa.Column('id_item', sa.Integer(), nullable=True),
-            sa.Column('ruta_archivo', sa.String(), nullable=True),
+            sa.Column('id_informe', sa.Integer(), nullable=True),
+            sa.Column('id_integrador', sa.Integer(), nullable=True),
+            sa.Column('ruta_archivo', sa.String(), nullable=False),
             sa.Column('fecha_captura', sa.DateTime(), nullable=True),
             sa.Column('metadatos', sa.Text(), nullable=True),
+            sa.ForeignKeyConstraint(['id_cliente'], ['cliente.id_cliente']),
+            sa.ForeignKeyConstraint(['id_proyecto'], ['proyecto.id_proyecto']),
+            sa.ForeignKeyConstraint(['id_tablero'], ['tablero.id_tablero']),
             sa.ForeignKeyConstraint(['id_inspeccion'], ['inspeccion.id_inspeccion']),
             sa.ForeignKeyConstraint(['id_item'], ['checklist_item.id_item']),
+            sa.ForeignKeyConstraint(['id_informe'], ['informe.id_informe']),
+            sa.ForeignKeyConstraint(['id_integrador'], ['integrador.id_integrador']),
+        )
+        # Índice único para evitar duplicados
+        add_unique_if_absent(
+            'uq_foto_unica',
+            'foto',
+            ['id_cliente','id_proyecto','id_tablero','id_inspeccion','id_item','id_informe','id_integrador']
         )
     else:
+        # Agregar nuevas columnas si faltan
+        add_column_if_absent('foto', sa.Column('id_cliente', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'cliente', ['id_cliente'], ['id_cliente'])
+
+        add_column_if_absent('foto', sa.Column('id_proyecto', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'proyecto', ['id_proyecto'], ['id_proyecto'])
+
+        add_column_if_absent('foto', sa.Column('id_tablero', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'tablero', ['id_tablero'], ['id_tablero'])
+
+        add_column_if_absent('foto', sa.Column('id_inspeccion', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'inspeccion', ['id_inspeccion'], ['id_inspeccion'])
+
         add_column_if_absent('foto', sa.Column('id_item', sa.Integer(), nullable=True))
         add_fk_if_absent(None, 'foto', 'checklist_item', ['id_item'], ['id_item'])
+
+        add_column_if_absent('foto', sa.Column('id_informe', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'informe', ['id_informe'], ['id_informe'])
+
+        add_column_if_absent('foto', sa.Column('id_integrador', sa.Integer(), nullable=True))
+        add_fk_if_absent(None, 'foto', 'integrador', ['id_integrador'], ['id_integrador'])
+
+        # Crear índice único si no existe
+        add_unique_if_absent(
+            'uq_foto_unica',
+            'foto',
+            ['id_cliente','id_proyecto','id_tablero','id_inspeccion','id_item','id_informe','id_integrador']
+        )
 
     # INFORME
     if not has_table('informe'):
