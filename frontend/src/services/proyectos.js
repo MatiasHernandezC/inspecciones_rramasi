@@ -7,6 +7,12 @@ export const ProyectosAPI = {
   listar: ({ skip = 0, limit = 100, cliente = null } = {}) =>
     apiFetch(`${BASE}/?skip=${skip}&limit=${limit}${cliente ? `&cliente=${cliente}` : ""}`),
   
+  listarPorCliente: (clienteId) =>
+    apiFetch(`${BASE}/?cliente=${clienteId}`),
+
+  listarPorProyecto: (proyectoId) =>
+    apiFetch(`${BASE}/?proyecto=${proyectoId}`),
+
   obtener: (id) => apiFetch(`${BASE}/${id}`),
   
   crear: (payload) =>

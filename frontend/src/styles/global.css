@@ -37,17 +37,34 @@
 
   .photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
   .photo-item { width: 100%; border-radius: 6px; object-fit: cover; border: 1px solid #ddd; page-break-inside: avoid; }
+  .only-print { display: none; }
+  .no-border { border: none !important; }
 }
 
-/* Print styles */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 15mm;
+    margin: 10mm;
   }
-  .no-print {
-    display: none !important;
+
+  .print-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 9999;
+    pointer-events: none;
+    padding-top: 0;
   }
+  .print-header img {
+    width: 100px;
+    height: auto;
+  }
+  .page-break-before {
+    page-break-before: always;
+  }
+  .no-print { display: none !important; }
+  .only-print { display: block !important; }
+
   html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -62,47 +79,89 @@
     margin: 0 auto;
     page-break-after: always;
   }
+  .title {
+    font-size: 18pt !important;
+    margin-bottom: 10mm !important;
+  }
 
-  nav[role="navigation"], .no-print, .title, .sectionTitle { display: none !important; }
+  /* Primera sección más abajo para dejar espacio al logo */
+  .print-root > .section:first-of-type {
+    margin-top: 25mm;
+  }
+
+  body {
+    counter-reset: page;
+  }
+  .print-root::after {
+    content: "Página " counter(page);
+    position: fixed;
+    bottom: 10mm;
+    right: 20mm;
+    font-size: 10pt;
+    color: #444;
+  }
+
+  nav[role="navigation"], .title, .sectionTitle { display: none !important; }
 
   /* Layout simplificado */
   .row { display: block !important; }
   .grid2, .grid3 { display: block !important; }
 
   /* Tablas para impresión */
-  .info-table tr > td:nth-child(1) {
-    background: #eee !important;
-    width: 40mm; /* Campo más pequeño */
+  .table.excel {
+    border-collapse: collapse !important;
+    margin-top: 2mm !important;
+    page-break-inside: auto;
   }
-  .info-table tr > td:nth-child(2) {
-    width: 90mm; /* Descripción más grande */
+  .table.excel thead {
+    display: table-header-group; /* repetición de encabezado en cada página */
   }
-  .info-table tr > td:nth-child(3) {
-    background: #eee !important;
-    width: 60mm; /* Observaciones más angosta */
+  .table.excel tbody {
+    display: table-row-group; /* comportamiento normal del cuerpo */
   }
-
-  /* 👈 agregado: compactar texto en impresión */
-  .table.excel th, .table.excel td,
-  .info-table td {
-    font-size: 8pt !important;
-    padding: 1mm 1.5mm !important;
-  }
-
-  .table.excel th {
-    font-weight: 600 !important; /* menos bold */
-  }
-
-  /* 👈 agregado: eliminar línea gris/efecto ring */
+  
   .trow {
+    page-break-inside: avoid; /* evita cortar la fila */
+    break-inside: avoid;
     background: #fff !important;
     box-shadow: none !important;
-    border: 1px solid #ccc !important; /* si quieres mantener división suave */
+    border: 1px solid #ccc !important;
   }
-  .table {
-    border-spacing: 0 !important; /* quita huecos que dibujan rayitas */
+  .trow2 {
+    background: #ffffff !important;
+    box-shadow: transparent !important;
+    border: transparent !important;
+  }
+  .tcell {
+    font-size: 8pt !important;
+    padding: 0.8mm 1.2mm !important;
+  }
+  .tcell2 {
+    font-size: 25px !important;
+    padding: 1mm 1.5mm !important;
+  }
+  .tcell3 {
+    font-size: 16px !important;
+    padding: 2mm 2.5mm !important;
+  }
+  .table.excel tbody .trow {
+    background: #fff !important;
   }
 
-  .section { box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 10mm; }
-  .photo-item { break-inside: avoid; page-break-inside: avoid; }
+  .table.excel thead .trow2 {
+    background: inherit !important; /* conserva tu gradiente */
+  }
+  .section {
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 10mm;
+  }
+  .no-border {
+    border: none !important;
+  }
+  .photo-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

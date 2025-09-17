@@ -122,9 +122,9 @@ def upgrade() -> None:
     sec = "PRESENTACIÓN"
     items += [
         b(sec, "1.1 LIMPIEZA INTERNA Y EXTERNA", 101),
-        b(sec, "1.3 CABLEADO ORDENADO Y AMARRADO", 103),
-        b(sec, "1.4 CORTES LIMADOS Y PINTADO (BARRAS, RIELES, PERFORACIONES, ETC.)", 104),
-        b(sec, "1.5 EMBALAJE APROPIADO PARA REVISION Y TRANSPORTE (Identificación)", 105),
+        b(sec, "1.2 CABLEADO ORDENADO Y AMARRADO", 102),
+        b(sec, "1.3 CORTES LIMADOS Y PINTADO (BARRAS, RIELES, PERFORACIONES, ETC.)", 103),
+        b(sec, "1.4 EMBALAJE APROPIADO PARA REVISION Y TRANSPORTE (Identificación)", 104),
     ]
 
     # 2.0 DOCUMENTACION
