@@ -279,6 +279,35 @@ export default function NuevaInspeccionPage() {
 
   return (
     <div className="print-root">
+            <div className="portada print-portada page-break-after">
+        <div className="flex flex-col items-center justify-center h-[90vh] text-center">
+          {/* Título */}
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            Informe de Inspección
+          </h1>
+
+          {/* Subtítulo o código del proyecto */}
+          <p className="text-xl text-slate-700 mb-2">
+            Proyecto: {proyectos.find((p) => String(p.id_proyecto) === String(form.id_proyecto))?.nombre || "-"}
+          </p>
+          <p className="text-lg text-slate-600">
+            Código de Tablero: {detalleTablero?.codigo_tablero || "-"}
+          </p>
+
+          {/* Opcional: datos adicionales */}
+          <div className="mt-12 text-slate-500 text-sm">
+            <p>Cliente: {(clientes.find(c => String(c.id_cliente) === String(form.id_cliente)) || {}).nombre || "-"}</p>
+            <p>Inspector: {form.inspector || "-"}</p>
+            <p>Fecha: {form.fecha_inspeccion || "-"}</p>
+          </div>
+          {/* Logo o imagen del proyecto */}
+          <img
+            src={detalleTablero?.foto_principal || "/logo.png"}
+            alt="Imagen del Proyecto"
+            className="w-64 h-40 object-contain mb-8"
+          />
+        </div>
+      </div>
        {/* Título de la page */}
       <h2 className="title" style={{ fontSize: 32 }}>Nueva Inspección</h2>
 

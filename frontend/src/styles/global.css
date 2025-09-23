@@ -39,6 +39,10 @@
   .photo-item { width: 100%; border-radius: 6px; object-fit: cover; border: 1px solid #ddd; page-break-inside: avoid; }
   .only-print { display: none; }
   .no-border { border: none !important; }
+  .print-portada {
+    background: white;
+    page-break-after: always; /* Hace que lo siguiente empiece en otra página */
+  }
 }
 
 @media print {
@@ -51,7 +55,9 @@
       color: #444;
     }
   }
-
+  .print-portada {
+    display: block;
+  }
   .print-header {
     position: fixed;
     top: 0;
