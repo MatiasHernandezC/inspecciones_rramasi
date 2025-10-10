@@ -1,11 +1,11 @@
-// src/pages/Clientes/ClienteFormPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClientesAPI } from "../../services/clientes";
+import { ArrowLeft, Home } from "lucide-react";
 
 export default function ClienteFormPage() {
   const nav = useNavigate();
-  const { id } = useParams(); // id del cliente para editar, si existe
+  const { id } = useParams();
 
   const [cliente, setCliente] = useState({
     nombre: "",
@@ -20,7 +20,6 @@ export default function ClienteFormPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Cargar datos si es edición
   useEffect(() => {
     if (id) {
       setLoading(true);
@@ -51,101 +50,75 @@ export default function ClienteFormPage() {
     }
   };
 
-  if (loading) return <p>Cargando cliente...</p>;
+  if (loading)
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <p className="text-gray-600">Cargando cliente...</p>
+      </div>
+    );
 
   return (
-    <div className="container mx-auto mt-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {id ? "Editar Cliente" : "Nuevo Cliente"}
-      </h2>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ENCABEZADO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {id ? "Editar Cliente" : "Nuevo Cliente"}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2"
+            onClick={() => nav(-1)}
+          >
+            <ArrowLeft size={18} /> Volver
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2"
+            onClick={() => nav("/")}
+          >
+            <Home size={18} /> Inicio
+          </button>
+        </div>
+      </div>
 
+      {/* ERROR */}
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-semibold">Nombre</label>
-          <input
-            type="text"
-            name="nombre"
-            value={cliente.nombre}
-            onChange={handleChange}
-            required
-            className="input"
-          />
-        </div>
+      {/* FORMULARIO */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded-lg p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {[
+          { label: "Nombre", name: "nombre", type: "text", required: true },
+          { label: "Alias", name: "alias", type: "text" },
+          { label: "Logo URL", name: "logo_url", type: "text" },
+          { label: "Contacto", name: "contacto", type: "text" },
+          { label: "Dirección", name: "direccion", type: "text" },
+          { label: "Teléfono", name: "telefono", type: "text" },
+          { label: "Email", name: "email", type: "email" },
+        ].map((field) => (
+          <div key={field.name} className="flex flex-col">
+            <label className="block font-semibold mb-1">{field.label}</label>
+            <input
+              type={field.type}
+              name={field.name}
+              value={cliente[field.name] || ""}
+              onChange={handleChange}
+              required={field.required}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+            />
+          </div>
+        ))}
 
-        <div>
-          <label className="block font-semibold">Alias</label>
-          <input
-            type="text"
-            name="alias"
-            value={cliente.alias || ""}
-            onChange={handleChange}
-            className="input"
-          />
+        {/* Botón ocupa toda la fila */}
+        <div className="md:col-span-2 flex justify-start mt-2">
+          <button
+            type="submit"
+            className="bg-brand hover:bg-brand-light text-white font-medium px-6 py-2 rounded-lg transition"
+          >
+            {id ? "Actualizar Cliente" : "Crear Cliente"}
+          </button>
         </div>
-
-        <div>
-          <label className="block font-semibold">Logo URL</label>
-          <input
-            type="text"
-            name="logo_url"
-            value={cliente.logo_url || ""}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold">Contacto</label>
-          <input
-            type="text"
-            name="contacto"
-            value={cliente.contacto || ""}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold">Dirección</label>
-          <input
-            type="text"
-            name="direccion"
-            value={cliente.direccion || ""}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold">Teléfono</label>
-          <input
-            type="text"
-            name="telefono"
-            value={cliente.telefono || ""}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={cliente.email || ""}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="btn"
-        >
-          {id ? "Actualizar Cliente" : "Crear Cliente"}
-        </button>
       </form>
     </div>
   );

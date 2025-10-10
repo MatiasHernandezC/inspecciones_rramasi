@@ -402,9 +402,7 @@ export default function EditarInspeccionPage() {
                   </th>
                 </tr>
               </thead>
-            </table>
-
-            {gruposPorMajor['inspeccion-visual'].map(([nombreGrupo, items]) => (
+              {gruposPorMajor['inspeccion-visual'].map(([nombreGrupo, items]) => (
               <table className="table excel" key={nombreGrupo}>
                 <thead>
                   <tr className="trow2 no-border">
@@ -456,6 +454,7 @@ export default function EditarInspeccionPage() {
                 </tbody>
               </table>
             ))}
+            </table>
           </div>
         )}
 
@@ -470,9 +469,7 @@ export default function EditarInspeccionPage() {
                   </th>
                 </tr>
               </thead>
-            </table>
-
-            {gruposPorMajor['pruebas-instrumentos'].map(([nombreGrupo, items]) => (
+              {gruposPorMajor['pruebas-instrumentos'].map(([nombreGrupo, items]) => (
               <table className="table excel" key={nombreGrupo}>
                 <thead>
                   <tr className="trow2 no-border">
@@ -524,6 +521,7 @@ export default function EditarInspeccionPage() {
                 </tbody>
               </table>
             ))}
+            </table>
           </div>
         )}
 

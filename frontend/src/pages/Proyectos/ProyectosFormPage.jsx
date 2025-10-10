@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ProyectosAPI } from "../../services/proyectos";
 import { ClientesAPI } from "../../services/clientes";
+import { ArrowLeft, Home } from "lucide-react";
 
 export default function ProyectoFormPage() {
   const { id } = useParams();
   const nav = useNavigate();
+
   const [clientes, setClientes] = useState([]);
   const [form, setForm] = useState({
     id_cliente: "",
@@ -15,66 +17,168 @@ export default function ProyectoFormPage() {
     estado: "",
   });
 
-  useEffect(() => {
-    ClientesAPI.listar({}).then(setClientes);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    if (id) {
-      ProyectosAPI.obtener(id).then(p => setForm({
-        id_cliente: p.id_cliente,
-        nombre: p.nombre,
-        numero: p.numero || "",
-        descripcion: p.descripcion || "",
-        estado: p.estado || "",
-      }));
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const clientesData = await ClientesAPI.listar();
+        setClientes(clientesData);
+
+        if (id) {
+          const proyecto = await ProyectosAPI.obtener(id);
+          setForm({
+            id_cliente: proyecto.id_cliente,
+            nombre: proyecto.nombre,
+            numero: proyecto.numero || "",
+            descripcion: proyecto.descripcion || "",
+            estado: proyecto.estado || "",
+          });
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [id]);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    if (id) await ProyectosAPI.actualizar(id, form);
-    else await ProyectosAPI.crear(form);
-    nav("/proyectos");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      if (id) {
+        await ProyectosAPI.actualizar(id, form);
+      } else {
+        await ProyectosAPI.crear(form);
+      }
+      nav("/proyectos");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <p className="text-gray-600">Cargando proyecto...</p>
+      </div>
+    );
+
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white shadow rounded-lg">
-      <h2 className="text-2xl font-bold mb-6">{id ? "Editar Proyecto" : "Nuevo Proyecto"}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ENCABEZADO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {id ? "Editar Proyecto" : "Nuevo Proyecto"}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2"
+            onClick={() => nav(-1)}
+          >
+            <ArrowLeft size={18} /> Volver
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2"
+            onClick={() => nav("/")}
+          >
+            <Home size={18} /> Inicio
+          </button>
+        </div>
+      </div>
+
+      {/* ERROR */}
+      {error && <p className="text-red-600 mb-4">{error}</p>}
+
+      {/* FORMULARIO */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded-lg p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {/* Cliente */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Cliente</label>
-          <select name="id_cliente" value={form.id_cliente} onChange={handleChange} className="input w-full">
+          <label className="block font-semibold mb-1">Cliente</label>
+          <select
+            name="id_cliente"
+            value={form.id_cliente}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+          >
             <option value="">Selecciona un cliente</option>
-            {clientes.map(c => (
-              <option key={c.id_cliente} value={c.id_cliente}>{c.nombre}</option>
+            {clientes.map((c) => (
+              <option key={c.id_cliente} value={c.id_cliente}>
+                {c.nombre}
+              </option>
             ))}
           </select>
         </div>
 
+        {/* Nombre */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nombre</label>
-          <input type="text" name="nombre" value={form.nombre} onChange={handleChange} className="input w-full" />
+          <label className="block font-semibold mb-1">Nombre</label>
+          <input
+            type="text"
+            name="nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+            required
+          />
         </div>
 
+        {/* Número */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Número</label>
-          <input type="text" name="numero" value={form.numero} onChange={handleChange} className="input w-full" />
+          <label className="block font-semibold mb-1">Número</label>
+          <input
+            type="text"
+            name="numero"
+            value={form.numero}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+          />
         </div>
 
+        {/* Estado */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Estado</label>
-          <input type="text" name="estado" value={form.estado} onChange={handleChange} className="input w-full" />
+          <label className="block font-semibold mb-1">Estado</label>
+          <input
+            type="text"
+            name="estado"
+            value={form.estado}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+          />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Descripción</label>
-          <textarea name="descripcion" value={form.descripcion} onChange={handleChange} className="input w-full" rows={3}></textarea>
+        {/* Descripción */}
+        <div className="md:col-span-2">
+          <label className="block font-semibold mb-1">Descripción</label>
+          <textarea
+            name="descripcion"
+            value={form.descripcion}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition"
+            rows={3}
+          ></textarea>
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
-          <button type="button" className="btn btn-secondary" onClick={() => nav("/proyectos")}>Cancelar</button>
-          <button type="submit" className="btn btn-primary">Guardar</button>
+        {/* Botón */}
+        <div className="md:col-span-2 flex justify-start mt-2">
+          <button
+            type="submit"
+            className="bg-brand hover:bg-brand-light text-white font-medium px-6 py-2 rounded-lg transition"
+          >
+            {id ? "Actualizar Proyecto" : "Crear Proyecto"}
+          </button>
         </div>
       </form>
     </div>
